@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Analise de engajamento dos ultimos 5 posts &bull; Gerado em 24/03/2026 16:42</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">65,333</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">732</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">66,065</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">326,665</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3,662</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2,684</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">70</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">2,754</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">13,420</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">351</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">522</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">12</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">534</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2,608</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">60</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">165</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">167</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">823</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">99</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">8</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">107</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">497</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">39</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#6</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">29</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">32</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">15</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">145</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@virusdamoda.fg">@virusdamoda.fg</option><option value="@kika.diniz">@kika.diniz</option><option value="@estiloquevale">@estiloquevale</option><option value="@finaflorb">@finaflorb</option><option value="@perfectwayfashion">@perfectwayfashion</option><option value="@onlauri">@onlauri</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a></td>
+            <td>2026-03-04</td>
+            <td class="num">202,233</td>
+            <td class="num">3,049</td>
+            <td class="num engagement">205,282</td>
+            <td class="caption" title="Com ou sem lenço?   Peças disponíveis link na Bio. . . #dicadeestilo #dicademoda #consultoriadeimagem #consultoriadeestilo #lojaroupasfemininas">Com ou sem lenço?   Peças disponíveis link na Bio. . . #dicadeestilo #dicademoda #consultoriadeimagem #consultoriadeesti...</td>
+            <td><a href="https://www.instagram.com/p/DVb7HHuDKUO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a></td>
+            <td>2026-02-17</td>
+            <td class="num">94,168</td>
+            <td class="num">480</td>
+            <td class="num engagement">94,648</td>
+            <td class="caption" title="A diferença não está na roupa, está em como você decide usar. Produção muda tudo 😅  Peças disponíveis no site link na Bio  . . #lookestiloso #lojaroupasfemininas #modafeminina #dicademoda #dicadeestil">A diferença não está na roupa, está em como você decide usar. Produção muda tudo 😅  Peças disponíveis no site link na Bi...</td>
+            <td><a href="https://www.instagram.com/p/DU3-40vDH02" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a></td>
+            <td>2026-01-22</td>
+            <td class="num">27,566</td>
+            <td class="num">101</td>
+            <td class="num engagement">27,667</td>
+            <td class="caption" title="Um lenço pode ser muito mais do que um acessório. Ele se transforma, acompanha e eleva o look 🤍 . Peças disponíveis no nosso site, link na Bio  . . #modafeminina #styling #dicasdemoda #lookestiloso #m">Um lenço pode ser muito mais do que um acessório. Ele se transforma, acompanha e eleva o look 🤍 . Peças disponíveis no n...</td>
+            <td><a href="https://www.instagram.com/p/DT08QOwjHst" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a></td>
+            <td>2026-03-22</td>
+            <td class="num">11,298</td>
+            <td class="num">202</td>
+            <td class="num engagement">11,500</td>
+            <td class="caption" title="Corpo pera não é o problema. O problema é não entender proporção.  𝗞𝗲𝗸𝗮 𝗩𝗲𝘀𝘁𝗲 𝘃𝗲𝘀𝘁𝗶𝗱𝗼 𝗜𝘁𝗮𝗽𝘂ã 𝗖𝗹𝗶𝗲𝗻𝘁𝗲 𝘃𝗲𝘀𝘁𝗲 𝗖𝗼𝗻𝗷𝘂𝗻𝘁𝗼 𝗕𝘂𝗿𝗶𝘁𝗶 + 𝗽𝗮𝗻𝘁𝗮𝗹𝗼𝗻𝗮 𝗔𝗹𝗮𝗴𝗼𝗮𝘀  Marca própria. Loja física. Estamos há mais de 10 anos n">Corpo pera não é o problema. O problema é não entender proporção.  𝗞𝗲𝗸𝗮 𝗩𝗲𝘀𝘁𝗲 𝘃𝗲𝘀𝘁𝗶𝗱𝗼 𝗜𝘁𝗮𝗽𝘂ã 𝗖𝗹𝗶𝗲𝗻𝘁𝗲 𝘃𝗲𝘀𝘁𝗲 𝗖𝗼𝗻𝗷𝘂𝗻𝘁𝗼 𝗕𝘂𝗿𝗶...</td>
+            <td><a href="https://www.instagram.com/p/DWMUg0-DkRN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a></td>
+            <td>2026-03-21</td>
+            <td class="num">2,677</td>
+            <td class="num">28</td>
+            <td class="num engagement">2,705</td>
+            <td class="caption" title="Comenta QUERO para receber os link das peças!  Qual seu estilo favorito ?   #dicademoda #consultoriadeestilo #dicadeestilo #lojaroupasfemininas #consultoriadeimagem">Comenta QUERO para receber os link das peças!  Qual seu estilo favorito ?   #dicademoda #consultoriadeestilo #dicadeesti...</td>
+            <td><a href="https://www.instagram.com/p/DWKhoyVjGih" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a></td>
+            <td>2026-03-22</td>
+            <td class="num">1,049</td>
+            <td class="num">54</td>
+            <td class="num engagement">1,103</td>
+            <td class="caption" title="Look pronto limita. A gente sugere. Você monta.  A pantalona Maceió é aquela base que resolve o guarda-roupa. Com a Maragogi ou a Serena, você cria propostas diferentes com a mesma peça.  Menos excess">Look pronto limita. A gente sugere. Você monta.  A pantalona Maceió é aquela base que resolve o guarda-roupa. Com a Mara...</td>
+            <td><a href="https://www.instagram.com/p/DWKZc-3hYSd" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a></td>
+            <td>2026-03-22</td>
+            <td class="num">1,041</td>
+            <td class="num">2</td>
+            <td class="num engagement">1,043</td>
+            <td class="caption" title="Se você gosta desse estilo... Seja bem-vinda ao meu perfil diva🌹   Se você quer aprender a se vestir de forma elegante e descomplicada acesse meu link na bio e adquira agora meu GUIA completo de como ">Se você gosta desse estilo... Seja bem-vinda ao meu perfil diva🌹   Se você quer aprender a se vestir de forma elegante e...</td>
+            <td><a href="https://www.instagram.com/p/DWMLweJDkGT" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a></td>
+            <td>2026-02-14</td>
+            <td class="num">517</td>
+            <td class="num">32</td>
+            <td class="num engagement">549</td>
+            <td class="caption" title="Aqui a roupa acompanha você. Não tenta te corrigir.  📍 Itaim Bibi Rua Doutor Renato Paes de Barros 417 📞 (11) 2776-9060 📱 WhatsApp (11) 97205-7354  🌐 www.kikadiniz.com.br  #kikadiniz #modafeminina #ro">Aqui a roupa acompanha você. Não tenta te corrigir.  📍 Itaim Bibi Rua Doutor Renato Paes de Barros 417 📞 (11) 2776-9060 ...</td>
+            <td><a href="https://www.instagram.com/p/DUt85jvjKij" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a></td>
+            <td>2026-03-12</td>
+            <td class="num">470</td>
+            <td class="num">46</td>
+            <td class="num engagement">516</td>
+            <td class="caption" title="Comenta QUERO que te envio o guia completo para você começar o seu guarda-roupa inteligente hoje!💖  • Curte e Compartilha com uma amiga que ama se vestir com elegância! • Salve esse post para não se e">Comenta QUERO que te envio o guia completo para você começar o seu guarda-roupa inteligente hoje!💖  • Curte e Compartilh...</td>
+            <td><a href="https://www.instagram.com/p/DVy__qZiSCE" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a></td>
+            <td>2026-03-17</td>
+            <td class="num">501</td>
+            <td class="num">0</td>
+            <td class="num engagement">501</td>
+            <td class="caption" title="Seja bem-vinda diva!🌹 Se você quer aprender a se vestir de forma elegante e descomplicada acesse meu link na bio e adquira agora meu GUIA completo de como montar um guarda-roupa inteligente e elegante">Seja bem-vinda diva!🌹 Se você quer aprender a se vestir de forma elegante e descomplicada acesse meu link na bio e adqui...</td>
+            <td><a href="https://www.instagram.com/p/DWAR810jc7C" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a></td>
+            <td>2026-03-16</td>
+            <td class="num">334</td>
+            <td class="num">0</td>
+            <td class="num engagement">334</td>
+            <td class="caption" title="Usariam? Se você quer aprender a se vestir de forma elegante e descomplicada acesse meu link na bio e adquira agora meu GUIA completo de como montar um guarda-roupa inteligente e elegante.  📘 No meu G">Usariam? Se você quer aprender a se vestir de forma elegante e descomplicada acesse meu link na bio e adquira agora meu ...</td>
+            <td><a href="https://www.instagram.com/p/DV9lu-Cjhr8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a></td>
+            <td>2026-03-23</td>
+            <td class="num">278</td>
+            <td class="num">47</td>
+            <td class="num engagement">325</td>
+            <td class="caption" title="𝐕𝐨𝐜𝐞̂ 𝐩𝐨𝐝𝐞 𝐜𝐨𝐧𝐭𝐢𝐧𝐮𝐚𝐫 𝐛𝐫𝐢𝐠𝐚𝐧𝐝𝐨 𝐜𝐨𝐦 𝐚 𝐞𝐭𝐢𝐪𝐮𝐞𝐭𝐚… 𝐨𝐮 𝐜𝐨𝐦𝐞𝐜̧𝐚𝐫 𝐚 𝐬𝐞 𝐯𝐞𝐬𝐭𝐢𝐫 𝐦𝐞𝐥𝐡𝐨𝐫.  Você usava 44? 𝐀𝐠𝐨𝐫𝐚 𝐯𝐨𝐜𝐞̂ 𝐞́ 𝟒𝟔. Seu tamanho era G? 𝐀𝐠𝐨𝐫𝐚 𝐞́ 𝐆𝐆.  𝐏𝐫𝐨𝐧𝐭𝐨. 𝐒𝐢𝐦𝐩𝐥𝐞𝐬 𝐚𝐬𝐬𝐢𝐦.  Quando você entende isso, tudo">𝐕𝐨𝐜𝐞̂ 𝐩𝐨𝐝𝐞 𝐜𝐨𝐧𝐭𝐢𝐧𝐮𝐚𝐫 𝐛𝐫𝐢𝐠𝐚𝐧𝐝𝐨 𝐜𝐨𝐦 𝐚 𝐞𝐭𝐢𝐪𝐮𝐞𝐭𝐚… 𝐨𝐮 𝐜𝐨𝐦𝐞𝐜̧𝐚𝐫 𝐚 𝐬𝐞 𝐯𝐞𝐬𝐭𝐢𝐫 𝐦𝐞𝐥𝐡𝐨𝐫.  Você usava 44? 𝐀𝐠𝐨𝐫𝐚 𝐯𝐨𝐜𝐞̂ 𝐞́ 𝟒𝟔. Seu tam...</td>
+            <td><a href="https://www.instagram.com/p/DWPiB0bjqMF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/kika.diniz/" target="_blank">@kika.diniz</a></td>
+            <td>2026-03-24</td>
+            <td class="num">278</td>
+            <td class="num">16</td>
+            <td class="num engagement">294</td>
+            <td class="caption" title="O vestido Itapuã é aquele tipo de peça que resolve sua vida. Não marca, tem preguinhas que ajudam no caimento e é extremamente confortável.  Feito em 𝗏𝗂𝗌𝖼𝗈𝗅𝗒𝖼𝗋𝖺 𝗉𝗋𝖾𝗆𝗂𝗎𝗆, com caimento leve e elegante. ">O vestido Itapuã é aquele tipo de peça que resolve sua vida. Não marca, tem preguinhas que ajudam no caimento e é extrem...</td>
+            <td><a href="https://www.instagram.com/p/DWRXgDlDhQU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/estiloquevale/" target="_blank">@estiloquevale</a></td>
+            <td>2026-03-19</td>
+            <td class="num">262</td>
+            <td class="num">12</td>
+            <td class="num engagement">274</td>
+            <td class="caption" title="Comenta QUERO que envio os links no seu direct❣️   • Curte e Compartilha com uma amiga que ama se vestir com elegância! • Salve esse post para se inspirar na próxima produção. 💌 Quer aprender a montar">Comenta QUERO que envio os links no seu direct❣️   • Curte e Compartilha com uma amiga que ama se vestir com elegância! ...</td>
+            <td><a href="https://www.instagram.com/p/DWFVeH7DX4f" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a></td>
+            <td>2026-03-21</td>
+            <td class="num">259</td>
+            <td class="num">2</td>
+            <td class="num engagement">261</td>
+            <td class="caption" title="Conjunto no alfaiataria 🪡😍 • 100,00 PMG">Conjunto no alfaiataria 🪡😍 • 100,00 PMG</td>
+            <td><a href="https://www.instagram.com/p/DWJjX9vAIjU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a></td>
+            <td>2026-03-22</td>
+            <td class="num">249</td>
+            <td class="num">6</td>
+            <td class="num engagement">255</td>
+            <td class="caption" title="Domingo de descanso, mais nosso site funciona 24h por dia! 🌸🚀.">Domingo de descanso, mais nosso site funciona 24h por dia! 🌸🚀.</td>
+            <td><a href="https://www.instagram.com/p/DWMzcNwElto" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a></td>
+            <td>2026-03-24</td>
+            <td class="num">160</td>
+            <td class="num">1</td>
+            <td class="num engagement">161</td>
+            <td class="caption" title="Vestido longo 😮‍💨 • R$100,00 | M . Enviamos para todo Brasil 🇧🇷.">Vestido longo 😮‍💨 • R$100,00 | M . Enviamos para todo Brasil 🇧🇷.</td>
+            <td><a href="https://www.instagram.com/p/DWQ_bmWgOK6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a></td>
+            <td>2026-03-23</td>
+            <td class="num">148</td>
+            <td class="num">9</td>
+            <td class="num engagement">157</td>
+            <td class="caption" title="O western entrega personalidade com elegância e intensidade. As franjas aliada aos detalhes surgem como protagonistas, trazendo movimento e atitude a cada produção.   #perfectway #estilo #lookdodia #m">O western entrega personalidade com elegância e intensidade. As franjas aliada aos detalhes surgem como protagonistas, t...</td>
+            <td><a href="https://www.instagram.com/p/DWPWbX0lV2q" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a></td>
+            <td>2026-03-22</td>
+            <td class="num">132</td>
+            <td class="num">10</td>
+            <td class="num engagement">142</td>
+            <td class="caption" title="A Cápsula SINGULAR nasce para valorizar o que não se repete: Você.  Uma coleção pensada para acompanhar a rotina com leveza. Vestir com verdade e transformar cada produção em expressão de identidade. ">A Cápsula SINGULAR nasce para valorizar o que não se repete: Você.  Uma coleção pensada para acompanhar a rotina com lev...</td>
+            <td><a href="https://www.instagram.com/p/DWMqMDNlVih" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a></td>
+            <td>2026-03-21</td>
+            <td class="num">114</td>
+            <td class="num">14</td>
+            <td class="num engagement">128</td>
+            <td class="caption" title="Wow! Foi aqui que pediram um time Pefect? 🤌🏻  A Cápsula SINGULAR traduz o estilo de cada Mulher Perfect, e mostra que juntas, essas escolhas trazem poder e presença.  @maricarniello @thamiresbonacin @">Wow! Foi aqui que pediram um time Pefect? 🤌🏻  A Cápsula SINGULAR traduz o estilo de cada Mulher Perfect, e mostra que ju...</td>
+            <td><a href="https://www.instagram.com/p/DWKGzK_jG7k" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a></td>
+            <td>2026-03-24</td>
+            <td class="num">92</td>
+            <td class="num">0</td>
+            <td class="num engagement">92</td>
+            <td class="caption" title="O look mais perfeito 😍">O look mais perfeito 😍</td>
+            <td><a href="https://www.instagram.com/p/DWRnp8wgHy2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a></td>
+            <td>2026-03-20</td>
+            <td class="num">74</td>
+            <td class="num">5</td>
+            <td class="num engagement">79</td>
+            <td class="caption" title="Entre nós  Um espaço onde Mulheres se reconhecem. No que sente, no que vive e no que escolhe construir todos os dias.  Ser mulher é carregar essência, força e verdade,  e se permitir viver.  #perfectw">Entre nós  Um espaço onde Mulheres se reconhecem. No que sente, no que vive e no que escolhe construir todos os dias.  S...</td>
+            <td><a href="https://www.instagram.com/p/DWHFOOcjAMD" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a></td>
+            <td>2026-03-23</td>
+            <td class="num">3</td>
+            <td class="num">65</td>
+            <td class="num engagement">68</td>
+            <td class="caption" title="Nova Coleção OnLauri 😍 Nas lojas físicas e no site 👉🏼  ✨ Body R$189 Ref: 33439 | Calça R$199 Ref: 34108  Comente “Eu Quero” que envio o link no direct! 🔗✨  Nova Coleção Exclusiva, nas lojas físicas e ">Nova Coleção OnLauri 😍 Nas lojas físicas e no site 👉🏼  ✨ Body R$189 Ref: 33439 | Calça R$199 Ref: 34108  Comente “Eu Que...</td>
+            <td><a href="https://www.instagram.com/p/DWPioF0ka4h" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/finaflorb/" target="_blank">@finaflorb</a></td>
+            <td>2026-03-24</td>
+            <td class="num">63</td>
+            <td class="num">1</td>
+            <td class="num engagement">64</td>
+            <td class="caption" title="Muitas novidades para darmos play a mais uma semana. 🚀">Muitas novidades para darmos play a mais uma semana. 🚀</td>
+            <td><a href="https://www.instagram.com/p/DWQ9uJzAF6e" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a></td>
+            <td>2025-10-31</td>
+            <td class="num">3</td>
+            <td class="num">41</td>
+            <td class="num engagement">44</td>
+            <td class="caption" title="Cascavel acaba de ganhar a sua nova referência em estilo 🤍✨ É com imenso prazer que abrimos a primeira franquia da OnLauri aqui!   Bruna e Gustavo convidam você a descobrir coleções incríveis, com qua">Cascavel acaba de ganhar a sua nova referência em estilo 🤍✨ É com imenso prazer que abrimos a primeira franquia da OnLau...</td>
+            <td><a href="https://www.instagram.com/p/DQeeGqhEd26" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a></td>
+            <td>2026-03-19</td>
+            <td class="num">3</td>
+            <td class="num">37</td>
+            <td class="num engagement">40</td>
+            <td class="caption" title="Chegou em BALNEÁRIO A SUA NOVA LOJA FAVORITA! 😍✨  Venha descobrir a nova coleção! 🫶🏼  🏬 End: Avenida Brasil 1485  Loja 02 Centro.  📞: (47) 99100-9100">Chegou em BALNEÁRIO A SUA NOVA LOJA FAVORITA! 😍✨  Venha descobrir a nova coleção! 🫶🏼  🏬 End: Avenida Brasil 1485  Loja 0...</td>
+            <td><a href="https://www.instagram.com/p/DWEMqPZkRkb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/perfectwayfashion/" target="_blank">@perfectwayfashion</a></td>
+            <td>2026-03-24</td>
+            <td class="num">29</td>
+            <td class="num">1</td>
+            <td class="num engagement">30</td>
+            <td class="caption" title="Um novo olhar, mais intenso, mais fashion. Cada movimento carrega atitude, com detalhes que assumem o protagonismo.  #perfectway #modafeminina #lookdodia #estilo">Um novo olhar, mais intenso, mais fashion. Cada movimento carrega atitude, com detalhes que assumem o protagonismo.  #pe...</td>
+            <td><a href="https://www.instagram.com/p/DWRoqSFjApi" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/virusdamoda.fg/" target="_blank">@virusdamoda.fg</a></td>
+            <td>2026-03-19</td>
+            <td class="num">21</td>
+            <td class="num">4</td>
+            <td class="num engagement">25</td>
+            <td class="caption" title="Nada transmite mais autoconfiança do que um look total red. A combinação da blusa em renda com gola alta e a calça pantalona de alfaiataria cria o equilíbrio perfeito entre a delicadeza e a força. Um ">Nada transmite mais autoconfiança do que um look total red. A combinação da blusa em renda com gola alta e a calça panta...</td>
+            <td><a href="https://www.instagram.com/p/DWC7RUoldNI" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a></td>
+            <td>2026-03-24</td>
+            <td class="num">3</td>
+            <td class="num">2</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="Night Out | A qualidade e caimento inconfundíveis. ⠀ ✨ Vestido: R$279 (PP | P | M | G) Ref: [33666]  📍 Disponível nas lojas físicas e no site.  🛒 Compre online: Onlauri.com (link clicável na bio) ⠀ 📧 ">Night Out | A qualidade e caimento inconfundíveis. ⠀ ✨ Vestido: R$279 (PP | P | M | G) Ref: [33666]  📍 Disponível nas lo...</td>
+            <td><a href="https://www.instagram.com/p/DWRQyzwkTWV" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/onlauri/" target="_blank">@onlauri</a></td>
+            <td>2026-03-24</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Like a princess | Estampa exclusiva, em linho e com cinto encapado, esse vestido é sinônimo de delicadeza. 🦋✨ ⠀ ✨ Vestido: R$369 (P | M | G) Ref: [33346]  📍 Disponível nas lojas físicas e no site.  🛒 ">Like a princess | Estampa exclusiva, em linho e com cinto encapado, esse vestido é sinônimo de delicadeza. 🦋✨ ⠀ ✨ Vestid...</td>
+            <td><a href="https://www.instagram.com/p/DWR2NrpEfmJ" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 30 posts de 6 perfis &bull; 24/03/2026 16:42
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Competitor Report</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0c10;--surface:#15151f;--surface2:#1c1c2e;--border:#282842;
+  --text:#e8e8f0;--muted:#8888a4;--accent:#833AB4;
+  --green:#34d399;--red:#f87171;--gold:#facc15;--silver:#94a3b8;--bronze:#d97706;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+
+.header{
+  background:linear-gradient(135deg,#833AB4 0%,#C13584 50%,#E1306C 100%);
+  padding:48px 24px;text-align:center;position:relative;overflow:hidden;
+}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0V0h40v14H20v2h20v2H20v2.5z'/%3E%3C/g%3E%3C/svg%3E")}
+.header h1{font-size:2.2rem;font-weight:800;letter-spacing:-1px;position:relative}
+.header p{opacity:.85;margin-top:6px;font-size:1rem;position:relative}
+.header .badge{display:inline-block;margin-top:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);padding:5px 16px;border-radius:20px;font-size:.82rem;font-weight:600;position:relative}
+
+.container{max-width:1400px;margin:0 auto;padding:32px 16px}
+
+.hint{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:16px}
+.hint span{background:var(--surface2);padding:3px 10px;border-radius:6px;font-size:.78rem}
+
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:960px}
+thead th{
+  background:linear-gradient(135deg,#833AB4,#C13584);color:#fff;
+  padding:14px 14px;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;font-weight:700;
+  text-align:right;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:2;
+  transition:background .2s;
+}
+thead th:hover{background:linear-gradient(135deg,#9b4bc9,#d94a9a)}
+thead th:first-child{text-align:center;width:46px;cursor:default}
+thead th:nth-child(2){text-align:left}
+thead th .arrow{display:inline-block;margin-left:4px;font-size:.65rem;opacity:.6;transition:opacity .2s}
+thead th.sorted .arrow{opacity:1}
+
+tbody td{padding:12px 14px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums;font-size:.9rem}
+tbody td:first-child{text-align:center;font-weight:700;font-size:1.05rem}
+tbody td:nth-child(2){text-align:left;font-weight:600}
+tbody td:nth-child(2) a{color:var(--text);text-decoration:none;transition:color .2s}
+tbody td:nth-child(2) a:hover{color:#C13584}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--surface2)}
+
+.pos{color:var(--green);font-weight:600}
+.neg{color:var(--red);font-weight:600}
+.na{color:var(--muted);font-style:italic;font-weight:400}
+
+.rank-1{color:var(--gold)}
+.rank-2{color:var(--silver)}
+.rank-3{color:var(--bronze)}
+
+.bar-cell{position:relative}
+.bar-bg{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;opacity:.12;z-index:0}
+.bar-cell span{position:relative;z-index:1}
+
+.footer{text-align:center;padding:28px 20px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border);margin-top:32px}
+
+@media(max-width:700px){.header h1{font-size:1.5rem}table{min-width:750px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Instagram Competitor Rankings</h1>
+  <p>13 Accounts &mdash; SocialBlade Data (Mar 2025 &rarr; Mar 2026)</p>
+  <div class="badge">Generated March 24, 2026</div>
+</div>
+
+<div class="container">
+  <p class="hint">Click any column header to sort <span>&#8593;&#8595;</span></p>
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th data-col="name">Account <span class="arrow">&#9650;</span></th>
+          <th data-col="followers" class="sorted">Followers <span class="arrow">&#9660;</span></th>
+          <th data-col="growth">12mo Growth % <span class="arrow">&#9650;</span></th>
+          <th data-col="net">Net Gained <span class="arrow">&#9650;</span></th>
+          <th data-col="avg">Avg / Month <span class="arrow">&#9650;</span></th>
+          <th data-col="last">Last Month <span class="arrow">&#9650;</span></th>
+          <th data-col="last3">Last 3 Months <span class="arrow">&#9650;</span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">Data sourced from <strong>SocialBlade</strong> &middot; Click column headers to re-rank &middot; March 24, 2026</div>
+
+<script>
+const ACCOUNTS=[
+  {name:'@onlauri',link:'https://www.instagram.com/onlauri/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[4052318,4101153,4095393,4099860,4099627,4098648,4126488,4151217,4162482,4187987,4205659,4227125,4255116]},
+  {name:'@use.elizah',link:'https://www.instagram.com/use.elizah/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[360733,365438,368523,370830,372272,374578,385627,394815,399935,406156,412286,419456,424236]},
+  {name:'@lojafrench',link:'https://www.instagram.com/lojafrench/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[235435,238898,248783,263403,273679,284339,304115,319052,327907,336418,348925,359582,369768]},
+  {name:'@modabijouxoficial',link:'https://www.instagram.com/modabijouxoficial/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[240669,254243,276540,299053,314438,319942,325138,329357,335006,341830,341557,340648,342692]},
+  {name:'@finaflorb',link:'https://www.instagram.com/finaflorb/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[322446,324145,325535,327170,328209,329622,330156,331269,336663,343546,343114,342800,342702]},
+  {name:'@thaysmodas',link:'https://www.instagram.com/thaysmodas/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[313469,314267,315826,317544,318960,320186,320092,320823,323956,328047,327997,327677,327448]},
+  {name:'@amordepeca',link:'https://www.instagram.com/amordepeca/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[203683,205725,209295,219921,231962,243609,null,260721,274404,300861,307126,310236,314243]},
+  {name:'@cordepimenta',link:'https://www.instagram.com/cordepimenta/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[185762,186058,186430,186761,188525,189197,189481,189805,192758,195745,197330,237572,257940]},
+  {name:'@perfectwayfashion',link:'https://www.instagram.com/perfectwayfashion/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[218432,219862,221041,221978,222806,225397,226466,228218,230605,231909,233604,235935,238363]},
+  {name:'@sostiqs',link:'https://www.instagram.com/sostiqs/',
+   months:['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'],
+   data:[154780,null,156176,163185,166390,177807,188866,196302,200759,204155,204547,204463,204690]},
+  {name:'@mg8moda',link:'https://www.instagram.com/mg8moda/',months:['Mar 26'],data:[102423]},
+  {name:'@virusdamoda.fg',link:'https://www.instagram.com/virusdamoda.fg/',months:['Mar 26'],data:[88235]},
+  {name:'@estiloquevale',link:'https://www.instagram.com/estiloquevale/',months:['Mar 26'],data:[75004]}
+];
+
+const ALL_MONTHS=['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'];
+
+function latest(a){return a.data[a.data.length-1]}
+function earliest(a){for(const v of a.data)if(v!==null)return v;return null}
+function hasHist(a){return a.data.length>1}
+function aligned(a){return ALL_MONTHS.map(m=>{const i=a.months.indexOf(m);return i!==-1?a.data[i]:null})}
+function mc(arr,i){return i>0&&arr[i]!==null&&arr[i-1]!==null?arr[i]-arr[i-1]:null}
+
+function computeMetrics(a){
+  const f=latest(a);
+  const e=earliest(a);
+  const h=hasHist(a);
+  const net=h?(f-e):null;
+  const growth=h&&e>0?((f-e)/e*100):null;
+  const numM=h?a.data.filter(v=>v!==null).length-1:0;
+  const avg=numM>0?Math.round(net/numM):null;
+  const al=aligned(a);
+  const last=h?mc(al,12):null;
+  let l3=null;
+  if(h){let s=0,ok=false;for(let i=10;i<=12;i++){const c=mc(al,i);if(c!==null){s+=c;ok=true}}if(ok)l3=s}
+  return{name:a.name,link:a.link,followers:f,growth,net,avg,last,last3:l3,hasHist:h};
+}
+
+const rows=ACCOUNTS.map(computeMetrics);
+
+let currentSort='followers';
+let currentDir='desc';
+
+function render(){
+  const NULL_LOW=-Infinity;
+  const sorted=[...rows].sort((a,b)=>{
+    let va=a[currentSort],vb=b[currentSort];
+    if(currentSort==='name') return currentDir==='asc'?a.name.localeCompare(b.name):b.name.localeCompare(a.name);
+    if(va===null) va=NULL_LOW;
+    if(vb===null) vb=NULL_LOW;
+    return currentDir==='desc'?vb-va:va-vb;
+  });
+
+  const maxFollowers=Math.max(...rows.map(r=>r.followers));
+  const maxAbs=k=>Math.max(...rows.map(r=>Math.abs(r[k]||0)),1);
+
+  const fmt=v=>v!==null?v.toLocaleString():'<span class="na">N/A</span>';
+  const fmtS=v=>{
+    if(v===null)return'<span class="na">N/A</span>';
+    const c=v>=0?'pos':'neg';return`<span class="${c}">${v>=0?'+':''}${v.toLocaleString()}</span>`;
+  };
+  const fmtP=v=>{
+    if(v===null)return'<span class="na">N/A</span>';
+    const c=v>=0?'pos':'neg';return`<span class="${c}">${v>=0?'+':''}${v.toFixed(1)}%</span>`;
+  };
+  const medal=i=>i<3?`<span class="rank-${i+1}">${i===0?'&#129351;':i===1?'&#129352;':'&#129353;'}</span>`:(i+1);
+
+  const barColor=(v,key)=>{
+    if(key==='followers')return'#833AB4';
+    if(v===null)return'transparent';
+    return v>=0?'#34d399':'#f87171';
+  };
+  const barWidth=(v,key)=>{
+    if(v===null)return 0;
+    if(key==='followers')return(v/maxFollowers*100);
+    return(Math.abs(v)/maxAbs(key)*100);
+  };
+
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=sorted.map((r,i)=>{
+    const bw=barWidth(r.followers,'followers');
+    return`<tr>
+      <td>${medal(i)}</td>
+      <td><a href="${r.link}" target="_blank">${r.name}</a></td>
+      <td class="bar-cell"><div class="bar-bg" style="width:${bw}%;background:${barColor(r.followers,'followers')}"></div><span>${fmt(r.followers)}</span></td>
+      <td>${fmtP(r.growth)}</td>
+      <td>${fmtS(r.net)}</td>
+      <td>${fmtS(r.avg)}</td>
+      <td>${fmtS(r.last)}</td>
+      <td>${fmtS(r.last3)}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('thead th[data-col]').forEach(th=>{
+    const col=th.dataset.col;
+    const arrow=th.querySelector('.arrow');
+    th.classList.toggle('sorted',col===currentSort);
+    if(col===currentSort) arrow.innerHTML=currentDir==='desc'?'&#9660;':'&#9650;';
+    else arrow.innerHTML='&#9650;';
+  });
+}
+
+document.querySelectorAll('thead th[data-col]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const col=th.dataset.col;
+    if(currentSort===col) currentDir=currentDir==='desc'?'asc':'desc';
+    else{currentSort=col;currentDir=col==='name'?'asc':'desc'}
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
