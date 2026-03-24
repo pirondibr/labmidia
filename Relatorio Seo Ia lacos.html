@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laços Corporativos - Relatório Detalhado AI Search</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e293b; }
+  header { background: #1e293b; color: white; padding: 48px 40px; }
+  header h1 { font-size: 2rem; font-weight: 800; }
+  header .sub { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; }
+  header .meta { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  header .meta span { background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; color: #cbd5e1; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+  .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+  .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; text-align: center; }
+  .card .num { font-size: 2.5rem; font-weight: 800; }
+  .card .num.green { color: #16a34a; }
+  .card .num.red { color: #dc2626; }
+  .card .num.blue { color: #2563eb; }
+  .card .num.gray { color: #475569; }
+  .card .lbl { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  .gauge { width: 100%; height: 16px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin: 32px 0; }
+  .gauge .fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #dc2626, #f97316); }
+  .gauge-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
+  h2 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 32px; }
+  thead th { background: #f8fafc; text-align: left; padding: 12px 16px; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tbody tr:hover { background: #f8fafc; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+  .badge.found { background: #dcfce7; color: #166534; }
+  .badge.not-found { background: #fef2f2; color: #991b1b; }
+  .prompt-text { color: #334155; line-height: 1.5; max-width: 600px; }
+  .comp-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .comp-bar .name { width: 180px; font-size: 0.8rem; color: #475569; text-align: right; flex-shrink: 0; }
+  .comp-bar .track { flex: 1; height: 24px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .comp-bar .fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.7rem; font-weight: 600; color: #fff; }
+  .fill.c1 { background: #dc2626; }
+  .fill.c2 { background: #f97316; }
+  .fill.c3 { background: #eab308; }
+  .fill.c4 { background: #94a3b8; }
+  .fill.hl { background: #2563eb; }
+  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .cat-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+  .cat-card h4 { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  .cat-card .stat { font-size: 1.8rem; font-weight: 800; }
+  .cat-card .stat.low { color: #dc2626; }
+  .cat-card .stat.mid { color: #f97316; }
+  .cat-card .detail { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+  footer { text-align: center; padding: 32px; color: #94a3b8; font-size: 0.75rem; border-top: 1px solid #f1f5f9; }
+  @media (max-width: 768px) {
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    .category-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Relatório Detalhado &mdash; AI Search Visibility</h1>
+  <div class="sub">Laços Corporativos &bull; lacoscorporativos.com.br</div>
+  <div class="meta">
+    <span>Data: 24/03/2026</span>
+    <span>Modelo: GPT-4o Mini Search Preview</span>
+    <span>Prompts: 50</span>
+    <span>Segmento: Presentes Corporativos / Employee Experience</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="summary-cards">
+    <div class="card"><div class="num gray">50</div><div class="lbl">Prompts Testados</div></div>
+    <div class="card"><div class="num green">5</div><div class="lbl">Vezes Encontrado</div></div>
+    <div class="card"><div class="num red">45</div><div class="lbl">Vezes Ausente</div></div>
+    <div class="card"><div class="num blue">10%</div><div class="lbl">Taxa de Visibilidade</div></div>
+  </div>
+
+  <div class="gauge-label"><span>0%</span><span>Visibilidade IA: 10%</span><span>100%</span></div>
+  <div class="gauge"><div class="fill" style="width:10%"></div></div>
+
+  <h2>Desempenho por Categoria de Busca</h2>
+  <div class="category-grid">
+    <div class="cat-card">
+      <h4>Kit Bebê Corporativo</h4>
+      <div class="stat mid">2/4</div>
+      <div class="detail">50% de visibilidade &mdash; melhor categoria</div>
+    </div>
+    <div class="cat-card">
+      <h4>Kit Onboarding / Boas-Vindas</h4>
+      <div class="stat low">1/12</div>
+      <div class="detail">8% de visibilidade &mdash; alta concorrência</div>
+    </div>
+    <div class="cat-card">
+      <h4>Condolências / Flores Corp.</h4>
+      <div class="stat mid">1/5</div>
+      <div class="detail">20% de visibilidade</div>
+    </div>
+    <div class="cat-card">
+      <h4>Presentes Corporativos (Geral)</h4>
+      <div class="stat low">1/18</div>
+      <div class="detail">5.5% de visibilidade &mdash; muito concorrido</div>
+    </div>
+    <div class="cat-card">
+      <h4>Employee Experience / RH</h4>
+      <div class="stat low">0/6</div>
+      <div class="detail">0% &mdash; ausente nesta categoria</div>
+    </div>
+    <div class="cat-card">
+      <h4>Endomarketing / Engajamento</h4>
+      <div class="stat low">0/5</div>
+      <div class="detail">0% &mdash; ausente nesta categoria</div>
+    </div>
+  </div>
+
+  <h2>Resultado Completo &mdash; Todos os 50 Prompts</h2>
+  <table>
+    <thead><tr><th>#</th><th>Status</th><th>Prompt</th><th>Concorrentes Citados</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que fazem kit de boas vindas personalizado para novos colaboradores no Brasil</td><td>10</td></tr>
+      <tr><td>2</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores fornecedores de kit onboarding corporativo no Brasil</td><td>3</td></tr>
+      <tr style="background:#f0fdf4"><td>3</td><td><span class="badge found">Encontrado</span></td><td class="prompt-text">Onde comprar kit bebê personalizado para empresas no Brasil?</td><td>6</td></tr>
+      <tr><td>4</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas especializadas em presentes corporativos personalizados no Brasil</td><td>0</td></tr>
+      <tr><td>5</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de coroas de flores corporativas com entrega em todo Brasil</td><td>0</td></tr>
+      <tr><td>6</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de employee experience e brindes corporativos no Brasil</td><td>11</td></tr>
+      <tr><td>7</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encomendar kit maternidade corporativo personalizado no Brasil?</td><td>7</td></tr>
+      <tr><td>8</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que entregam coroas de condolências corporativas em até 1 hora no Brasil</td><td>0</td></tr>
+      <tr><td>9</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Kit de boas vindas para novos funcionários onde comprar no Brasil?</td><td>6</td></tr>
+      <tr><td>10</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de presentes personalizados para ações de endomarketing no Brasil</td><td>0</td></tr>
+      <tr><td>11</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de kits corporativos para RH no Brasil</td><td>0</td></tr>
+      <tr><td>12</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde comprar kit welcome box personalizado para onboarding no Brasil?</td><td>12</td></tr>
+      <tr><td>13</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que fazem kit nascimento para colaboradores no Brasil</td><td>7</td></tr>
+      <tr><td>14</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de brindes corporativos para employee experience no Brasil</td><td>5</td></tr>
+      <tr><td>15</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores soluções de presentes corporativos para datas comemorativas no Brasil</td><td>11</td></tr>
+      <tr><td>16</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas de logística de presentes corporativos com entrega nacional no Brasil</td><td>4</td></tr>
+      <tr><td>17</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encomendar coroas de flores para velório em nome da empresa no Brasil?</td><td>0</td></tr>
+      <tr><td>18</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de kit onboarding personalizado com logo da empresa no Brasil</td><td>3</td></tr>
+      <tr><td>19</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de brindes para ações de engajamento de colaboradores no Brasil</td><td>3</td></tr>
+      <tr style="background:#f0fdf4"><td>20</td><td><span class="badge found">Encontrado</span></td><td class="prompt-text">Kit bebê corporativo para presentear colaboradoras gestantes no Brasil</td><td>5</td></tr>
+      <tr><td>21</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que fazem presentes personalizados para employer branding no Brasil</td><td>0</td></tr>
+      <tr><td>22</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde comprar kit de integração para novos colaboradores no Brasil?</td><td>6</td></tr>
+      <tr><td>23</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de presentes corporativos com portal de pedidos online no Brasil</td><td>10</td></tr>
+      <tr><td>24</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas para encomendar coroas de flores empresariais no Brasil</td><td>0</td></tr>
+      <tr><td>25</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Soluções de presentes corporativos para fortalecer a cultura organizacional no Brasil</td><td>5</td></tr>
+      <tr><td>26</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas de kits personalizados para onboarding remoto no Brasil</td><td>4</td></tr>
+      <tr><td>27</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encontrar kit maternidade personalizado para empresas no Brasil?</td><td>7</td></tr>
+      <tr><td>28</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de brindes corporativos com personalização e entrega no Brasil</td><td>3</td></tr>
+      <tr><td>29</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de presentes para reconhecimento de colaboradores no Brasil</td><td>0</td></tr>
+      <tr><td>30</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Kit boas vindas empresa quais as melhores opções no Brasil?</td><td>0</td></tr>
+      <tr><td>31</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que oferecem gestão de estoque de brindes corporativos no Brasil</td><td>6</td></tr>
+      <tr><td>32</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encomendar presentes corporativos para eventos internos no Brasil?</td><td>12</td></tr>
+      <tr><td>33</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de kit welcome pack para empresas de tecnologia no Brasil</td><td>0</td></tr>
+      <tr><td>34</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de presentes para celebrar conquistas dos colaboradores no Brasil</td><td>0</td></tr>
+      <tr><td>35</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Quais empresas fazem kit de nascimento personalizado para funcionários no Brasil?</td><td>0</td></tr>
+      <tr><td>36</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas de presentes corporativos para ações de retenção de talentos no Brasil</td><td>0</td></tr>
+      <tr style="background:#f0fdf4"><td>37</td><td><span class="badge found">Encontrado</span></td><td class="prompt-text">Onde comprar arranjos de condolências em nome de empresa no Brasil?</td><td>2</td></tr>
+      <tr><td>38</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de kits personalizados para campanhas internas de RH no Brasil</td><td>5</td></tr>
+      <tr><td>39</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores soluções de presentes para programas de diversidade e inclusão no Brasil</td><td>5</td></tr>
+      <tr style="background:#f0fdf4"><td>40</td><td><span class="badge found">Encontrado</span></td><td class="prompt-text">Kit onboarding personalizado com entrega na casa do colaborador no Brasil</td><td>0</td></tr>
+      <tr><td>41</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Empresas que fazem presentes corporativos para dias das mães e pais no Brasil</td><td>0</td></tr>
+      <tr><td>42</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encontrar fornecedor de presentes corporativos com entrega internacional?</td><td>5</td></tr>
+      <tr><td>43</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas de kits para ações de endomarketing e comunicação interna no Brasil</td><td>0</td></tr>
+      <tr><td>44</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de kit boas vindas criativo para startups no Brasil</td><td>6</td></tr>
+      <tr style="background:#f0fdf4"><td>45</td><td><span class="badge found">Encontrado</span></td><td class="prompt-text">Empresas especializadas em presentes corporativos para datas especiais no Brasil</td><td>4</td></tr>
+      <tr><td>46</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Onde encomendar kit personalizado para aniversário de empresa no Brasil?</td><td>8</td></tr>
+      <tr><td>47</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Fornecedores de presentes personalizados para programas de bem-estar corporativo no Brasil</td><td>1</td></tr>
+      <tr><td>48</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Melhores empresas para enviar flores e condolências corporativas no Brasil</td><td>0</td></tr>
+      <tr><td>49</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Quais empresas de presentes corporativos atendem grandes empresas como PwC e Ambev?</td><td>0</td></tr>
+      <tr><td>50</td><td><span class="badge not-found">Ausente</span></td><td class="prompt-text">Soluções de presentes corporativos para melhorar o clima organizacional no Brasil</td><td>5</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Top 15 Concorrentes Citados pela IA</h2>
+  <div style="margin-bottom:40px">
+    <div class="comp-bar"><div class="name">Canequeiros Presentes</div><div class="track"><div class="fill c1" style="width:100%">5x</div></div></div>
+    <div class="comp-bar"><div class="name">FirstHug</div><div class="track"><div class="fill c2" style="width:80%">4x</div></div></div>
+    <div class="comp-bar"><div class="name">Lobby</div><div class="track"><div class="fill c2" style="width:80%">4x</div></div></div>
+    <div class="comp-bar"><div class="name" style="color:#2563eb;font-weight:700">Laços Corporativos</div><div class="track"><div class="fill hl" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">BIRD Soluções Corp.</div><div class="track"><div class="fill c4" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">Endonauta</div><div class="track"><div class="fill c4" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">Sempre Materna</div><div class="track"><div class="fill c4" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">Bizbox</div><div class="track"><div class="fill c4" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">LeBlank Corporativo</div><div class="track"><div class="fill c4" style="width:60%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">Kit Integração</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Now Buck</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Soberano Brindes</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Brindes Patricelli</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Baskets Presentes</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Unnik Bags</div><div class="track"><div class="fill c4" style="width:40%">2x</div></div></div>
+  </div>
+
+</div>
+
+<footer>Relatório Detalhado de Visibilidade em IA &bull; Laços Corporativos &bull; Março 2026 &bull; Dados extraídos via ChatGPT Search Preview</footer>
+</body>
+</html>
