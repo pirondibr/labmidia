@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grupo Ativa - Relat&oacute;rio Detalhado AI Search</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e293b; }
+  header { background: #0f172a; color: white; padding: 48px 40px; }
+  header h1 { font-size: 2rem; font-weight: 800; }
+  header .sub { color: #94a3b8; font-size: 0.95rem; margin-top: 4px; }
+  header .meta { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  header .meta span { background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; color: #cbd5e1; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+  .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+  .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; text-align: center; }
+  .card .num { font-size: 2.5rem; font-weight: 800; }
+  .card .num.red { color: #dc2626; }
+  .card .num.gray { color: #475569; }
+  .card .lbl { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  .gauge { width: 100%; height: 16px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin: 32px 0; }
+  .gauge .fill { height: 100%; border-radius: 8px; background: #dc2626; width: 2px; }
+  .gauge-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px; }
+  h2 { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; }
+  .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .cat-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+  .cat-card h4 { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  .cat-card .stat { font-size: 1.8rem; font-weight: 800; color: #dc2626; }
+  .cat-card .detail { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 32px; }
+  thead th { background: #f8fafc; text-align: left; padding: 12px 16px; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tbody tr:hover { background: #f8fafc; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; background: #fef2f2; color: #991b1b; }
+  .prompt-text { color: #334155; line-height: 1.5; max-width: 600px; }
+  .comp-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .comp-bar .name { width: 200px; font-size: 0.8rem; color: #475569; text-align: right; flex-shrink: 0; }
+  .comp-bar .track { flex: 1; height: 24px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .comp-bar .fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.7rem; font-weight: 600; color: #fff; }
+  .fill.c1 { background: #dc2626; } .fill.c2 { background: #f97316; } .fill.c4 { background: #94a3b8; }
+  footer { text-align: center; padding: 32px; color: #94a3b8; font-size: 0.75rem; border-top: 1px solid #f1f5f9; }
+  @media (max-width: 768px) { .summary-cards { grid-template-columns: repeat(2, 1fr); } .category-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Relat&oacute;rio Detalhado &mdash; AI Search Visibility</h1>
+  <div class="sub">Grupo Ativa &bull; grupoativa.net</div>
+  <div class="meta">
+    <span>Data: 24/03/2026</span>
+    <span>Modelo: GPT-4o Mini Search Preview</span>
+    <span>Prompts: 50</span>
+    <span>Segmento: Com&eacute;rcio Exterior / Log&iacute;stica Aduaneira</span>
+  </div>
+</header>
+<div class="container">
+  <div class="summary-cards">
+    <div class="card"><div class="num gray">50</div><div class="lbl">Prompts Testados</div></div>
+    <div class="card"><div class="num red">0</div><div class="lbl">Vezes Encontrado</div></div>
+    <div class="card"><div class="num red">50</div><div class="lbl">Vezes Ausente</div></div>
+    <div class="card"><div class="num red">0%</div><div class="lbl">Taxa de Visibilidade</div></div>
+  </div>
+  <div class="gauge-label"><span>0%</span><span>Visibilidade IA: 0%</span><span>100%</span></div>
+  <div class="gauge"><div class="fill"></div></div>
+
+  <h2>Desempenho por Categoria de Busca</h2>
+  <div class="category-grid">
+    <div class="cat-card"><h4>Assessoria Aduaneira</h4><div class="stat">0/14</div><div class="detail">0% &mdash; principal servi&ccedil;o, zero visibilidade</div></div>
+    <div class="cat-card"><h4>Operador Log&iacute;stico</h4><div class="stat">0/12</div><div class="detail">0% &mdash; inclui OEA e Mercosul</div></div>
+    <div class="cat-card"><h4>Comex Geral</h4><div class="stat">0/10</div><div class="detail">0% &mdash; consultas gen&eacute;ricas</div></div>
+    <div class="cat-card"><h4>Despacho Aduaneiro SC</h4><div class="stat">0/7</div><div class="detail">0% &mdash; foco regional</div></div>
+    <div class="cat-card"><h4>Jur&iacute;dico / Compliance</h4><div class="stat">0/4</div><div class="detail">0% &mdash; servi&ccedil;o diferenciado</div></div>
+    <div class="cat-card"><h4>Contabilidade Comex</h4><div class="stat">0/3</div><div class="detail">0% &mdash; nicho espec&iacute;fico</div></div>
+  </div>
+
+  <h2>Resultado Completo &mdash; Todos os 50 Prompts</h2>
+  <table>
+    <thead><tr><th>#</th><th>Status</th><th>Prompt</th><th>Concorr.</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de assessoria aduaneira no Brasil</td><td>3</td></tr>
+      <tr><td>2</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de despacho aduaneiro em Santa Catarina</td><td>3</td></tr>
+      <tr><td>3</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operadores log&iacute;sticos com certifica&ccedil;&atilde;o OEA no Brasil</td><td>7</td></tr>
+      <tr><td>4</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores despachantes aduaneiros para importa&ccedil;&atilde;o no Brasil</td><td>0</td></tr>
+      <tr><td>5</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de com&eacute;rcio exterior em Itaja&iacute; Santa Catarina</td><td>4</td></tr>
+      <tr><td>6</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria aduaneira para importa&ccedil;&atilde;o e exporta&ccedil;&atilde;o no Mercosul</td><td>10</td></tr>
+      <tr><td>7</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico para transporte internacional no sul do Brasil</td><td>0</td></tr>
+      <tr><td>8</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de log&iacute;stica aduaneira em Dion&iacute;sio Cerqueira SC</td><td>0</td></tr>
+      <tr><td>9</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de comex no Brasil para importadores</td><td>0</td></tr>
+      <tr><td>10</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Despachante aduaneiro com escrit&oacute;rio em Foz do Igua&ccedil;u</td><td>0</td></tr>
+      <tr><td>11</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de assessoria em com&eacute;rcio exterior com certifica&ccedil;&atilde;o OEA</td><td>3</td></tr>
+      <tr><td>12</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico para cargas no Mercosul com armazenagem</td><td>0</td></tr>
+      <tr><td>13</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Contabilidade especializada em com&eacute;rcio exterior no Brasil</td><td>0</td></tr>
+      <tr><td>14</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de certifica&ccedil;&atilde;o de produtos para importa&ccedil;&atilde;o no Brasil</td><td>0</td></tr>
+      <tr><td>15</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria jur&iacute;dica aduaneira para importadores no Brasil</td><td>0</td></tr>
+      <tr><td>16</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de log&iacute;stica internacional em Santa Catarina</td><td>0</td></tr>
+      <tr><td>17</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Despachante aduaneiro em S&atilde;o Francisco do Sul SC</td><td>0</td></tr>
+      <tr><td>18</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de desembara&ccedil;o aduaneiro com presen&ccedil;a nacional no Brasil</td><td>3</td></tr>
+      <tr><td>19</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico com certifica&ccedil;&atilde;o OEA em Santa Catarina</td><td>0</td></tr>
+      <tr><td>20</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria aduaneira para redu&ccedil;&atilde;o de custos de importa&ccedil;&atilde;o</td><td>0</td></tr>
+      <tr><td>21</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de com&eacute;rcio exterior em Foz do Igua&ccedil;u Paran&aacute;</td><td>4</td></tr>
+      <tr><td>22</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores operadores log&iacute;sticos para importa&ccedil;&atilde;o pelo porto de Itaja&iacute;</td><td>0</td></tr>
+      <tr><td>23</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Consultoria em com&eacute;rcio exterior para empresas brasileiras</td><td>0</td></tr>
+      <tr><td>24</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de despacho aduaneiro na fronteira do Brasil com Argentina</td><td>0</td></tr>
+      <tr><td>25</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria para licenciamento de importa&ccedil;&atilde;o no Brasil</td><td>3</td></tr>
+      <tr><td>26</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico para transporte rodovi&aacute;rio internacional no Mercosul</td><td>4</td></tr>
+      <tr><td>27</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Contabilidade tribut&aacute;ria para empresas de importa&ccedil;&atilde;o e exporta&ccedil;&atilde;o</td><td>15</td></tr>
+      <tr><td>28</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas que fazem certifica&ccedil;&atilde;o Inmetro para produtos importados</td><td>0</td></tr>
+      <tr><td>29</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Despachante aduaneiro para importa&ccedil;&atilde;o da China no Brasil</td><td>4</td></tr>
+      <tr><td>30</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de log&iacute;stica em Itaja&iacute; para com&eacute;rcio exterior</td><td>0</td></tr>
+      <tr><td>31</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria completa em comex com jur&iacute;dico e contabilidade no Brasil</td><td>0</td></tr>
+      <tr><td>32</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico para carga terrestre na fronteira Brasil Argentina</td><td>0</td></tr>
+      <tr><td>33</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de comex com unidades em Santa Catarina e S&atilde;o Paulo</td><td>0</td></tr>
+      <tr><td>34</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Despachante aduaneiro especializado em classifica&ccedil;&atilde;o fiscal</td><td>5</td></tr>
+      <tr><td>35</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de assessoria aduaneira do sul do Brasil</td><td>2</td></tr>
+      <tr><td>36</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico com armaz&eacute;m alfandegado em Santa Catarina</td><td>0</td></tr>
+      <tr><td>37</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de comex que atendem todo o processo de importa&ccedil;&atilde;o</td><td>2</td></tr>
+      <tr><td>38</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria aduaneira para exporta&ccedil;&atilde;o no Mercosul</td><td>10</td></tr>
+      <tr><td>39</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Consultoria em regulamenta&ccedil;&atilde;o e certifica&ccedil;&atilde;o de produtos importados</td><td>4</td></tr>
+      <tr><td>40</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de despacho aduaneiro com tecnologia e rastreamento</td><td>0</td></tr>
+      <tr><td>41</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores despachantes aduaneiros em portos de Santa Catarina</td><td>0</td></tr>
+      <tr><td>42</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico internacional com frota pr&oacute;pria no sul do Brasil</td><td>2</td></tr>
+      <tr><td>43</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de comex com servi&ccedil;o jur&iacute;dico aduaneiro no Brasil</td><td>3</td></tr>
+      <tr><td>44</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Assessoria para drawback e regimes aduaneiros especiais</td><td>0</td></tr>
+      <tr><td>45</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Melhores empresas de log&iacute;stica para importa&ccedil;&atilde;o por Navegantes e Itaja&iacute;</td><td>7</td></tr>
+      <tr><td>46</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Despachante aduaneiro para importa&ccedil;&atilde;o de m&aacute;quinas e equipamentos</td><td>0</td></tr>
+      <tr><td>47</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de assessoria aduaneira com escrit&oacute;rio em SP e SC</td><td>0</td></tr>
+      <tr><td>48</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Operador log&iacute;stico para cargas refrigeradas e especiais no Mercosul</td><td>5</td></tr>
+      <tr><td>49</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Consultoria em compliance aduaneiro e fiscal para importadores</td><td>0</td></tr>
+      <tr><td>50</td><td><span class="badge">Ausente</span></td><td class="prompt-text">Empresas de comex com solu&ccedil;&otilde;es integradas de log&iacute;stica e despacho</td><td>3</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Top 10 Concorrentes Citados pela IA</h2>
+  <div style="margin-bottom:40px">
+    <div class="comp-bar"><div class="name">Uni Mercosul</div><div class="track"><div class="fill c1" style="width:100%">3x</div></div></div>
+    <div class="comp-bar"><div class="name">Forer Commerce</div><div class="track"><div class="fill c2" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">HS Assessoria Aduaneira</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Mezet Assessoria</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Agrega Comex</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Blue Line Aduaneira</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Tradeworks Despacho</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Terrasul Assessoria</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">De Paula Assessoria</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+    <div class="comp-bar"><div class="name">Comexport</div><div class="track"><div class="fill c4" style="width:66%">2x</div></div></div>
+  </div>
+</div>
+<footer>Relat&oacute;rio Detalhado de Visibilidade em IA &bull; Grupo Ativa &bull; Mar&ccedil;o 2026</footer>
+</body>
+</html>
