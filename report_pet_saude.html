@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Pipeline Report</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 { font-size: 2.2rem; color: #fff; margin-bottom: 8px; letter-spacing: 1px; }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1500px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem; color: #fff; margin-bottom: 20px; padding-bottom: 10px;
+        border-bottom: 2px solid #e94560; display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    .profiles-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+        gap: 16px; margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px;
+        padding: 20px; display: flex; gap: 16px; align-items: flex-start; transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560; color: #fff; font-weight: 700; font-size: 1.1rem;
+        width: 40px; height: 40px; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .profile-name a { color: #fff; font-size: 1.15rem; font-weight: 600; text-decoration: none; }
+    .profile-name a:hover { color: #e94560; }
+    .profile-company { color: #8892b0; font-size: 0.82rem; margin-top: 4px; }
+    .profile-company .site-link { color: #64b5f6; text-decoration: none; font-size: 0.78rem; }
+    .profile-company .site-link:hover { text-decoration: underline; }
+    .source-badge {
+        display: inline-block; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px;
+        margin-left: 8px; font-weight: 600; text-transform: uppercase; vertical-align: middle;
+    }
+    .source-website { background: #1b5e20; color: #a5d6a7; }
+    .source-dataforseo { background: #e65100; color: #ffcc80; }
+    .profile-metrics { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .metric {
+        background: #12121f; border-radius: 8px; padding: 8px 14px;
+        text-align: center; min-width: 80px;
+    }
+    .metric.highlight { background: linear-gradient(135deg, #e94560 0%, #c23152 100%); }
+    .metric-value { display: block; font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .metric-label {
+        display: block; font-size: 0.7rem; color: #8892b0;
+        text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    .table-wrapper {
+        background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px; overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px; display: flex; gap: 12px; align-items: center;
+        border-bottom: 1px solid #2a2a4a; flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f; border: 1px solid #2a2a4a; color: #e0e0e0;
+        padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f; border: 1px solid #2a2a4a; color: #e0e0e0;
+        padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; outline: none;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+        background: #12121f; color: #8892b0; font-size: 0.75rem;
+        text-transform: uppercase; letter-spacing: 0.8px; padding: 14px 16px;
+        text-align: left; cursor: pointer; user-select: none; white-space: nowrap;
+        position: sticky; top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr { border-bottom: 1px solid #1f1f35; transition: background 0.15s; }
+    tbody tr:hover { background: #22223a; }
+    td { padding: 12px 16px; font-size: 0.88rem; vertical-align: middle; }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.company-cell { color: #b0bec5; font-size: 0.82rem; }
+    td.caption {
+        max-width: 280px; white-space: nowrap; overflow: hidden;
+        text-overflow: ellipsis; color: #8892b0; font-size: 0.82rem;
+    }
+    td a { color: #64b5f6; text-decoration: none; font-weight: 500; }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer { text-align: center; padding: 30px; color: #555; font-size: 0.8rem; }
+
+    .pipeline-info {
+        background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px;
+        padding: 20px; margin-bottom: 30px; font-size: 0.85rem; color: #8892b0;
+    }
+    .pipeline-info strong { color: #e0e0e0; }
+    .pipeline-info .found { color: #66bb6a; }
+    .pipeline-info .notfound { color: #ef5350; }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy &mdash; Pipeline Report</h1>
+    <p>URL &rarr; Instagram Discovery &rarr; Top 10 Posts Analysis &bull; 25/03/2026 09:02</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+        <div class="profile-card">
+            <div class="profile-rank">#1</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">doglife &mdash; <a href="https://www.doglife.com.br/" target="_blank" class="site-link">https://www.doglife.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">1,138</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">50</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">1,188</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">11,379</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">503</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#2</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">petlove &mdash; <a href="https://www.petlove.com.br/" target="_blank" class="site-link">https://www.petlove.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">562</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">80</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">642</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">5,621</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">800</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#3</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a>
+                    <span class="source-badge source-website">website</span>
+                </div>
+                <div class="profile-company">caresaudeanimal &mdash; <a href="https://caresaudeanimal.com.br" target="_blank" class="site-link">https://caresaudeanimal.com.br</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">191</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">17</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">208</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">1,912</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">170</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#4</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">meupetclub &mdash; <a href="https://www.meupetclub.com.br/" target="_blank" class="site-link">https://www.meupetclub.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">91</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">8</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">99</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">912</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">76</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#5</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">petlife &mdash; <a href="https://www.petlife.com.br/" target="_blank" class="site-link">https://www.petlife.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">51</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">8</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">59</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">514</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">81</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#6</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">planowevets &mdash; <a href="https://www.planowevets.com.br/" target="_blank" class="site-link">https://www.planowevets.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">42</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">7</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">49</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">415</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">68</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#7</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">plamev &mdash; <a href="https://plamev.com.br/" target="_blank" class="site-link">https://plamev.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">3</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">19</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">22</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">30</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">188</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#8</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a>
+                    <span class="source-badge source-website">website</span>
+                </div>
+                <div class="profile-company">apetsaude &mdash; <a href="https://apetsaude.com.br/" target="_blank" class="site-link">https://apetsaude.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">7</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">1</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">8</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">66</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">9</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-rank">#9</div>
+            <div class="profile-info">
+                <div class="profile-name">
+                    <a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a>
+                    <span class="source-badge source-dataforseo">dataforseo</span>
+                </div>
+                <div class="profile-company">auhappy &mdash; <a href="https://auhappy.com.br/" target="_blank" class="site-link">https://auhappy.com.br/</a></div>
+                <div class="profile-metrics">
+                    <div class="metric">
+                        <span class="metric-value">10</span>
+                        <span class="metric-label">Posts</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">6</span>
+                        <span class="metric-label">Avg Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">0</span>
+                        <span class="metric-label">Avg Comments</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="metric-value">6</span>
+                        <span class="metric-label">Avg Engagement</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">62</span>
+                        <span class="metric-label">Total Likes</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">0</span>
+                        <span class="metric-label">Total Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, empresa, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@doglife_oficial">@doglife_oficial (doglife)</option><option value="@petlovebrasil">@petlovebrasil (petlove)</option><option value="@caresaudeanimal">@caresaudeanimal (caresaudeanimal)</option><option value="@meupetclub">@meupetclub (meupetclub)</option><option value="@petlife.com.br">@petlife.com.br (petlife)</option><option value="@we.vets">@we.vets (planowevets)</option><option value="@plamevoficial">@plamevoficial (plamev)</option><option value="@apetsaude">@apetsaude (apetsaude)</option><option value="@auhappypet">@auhappypet (auhappy)</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Empresa <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(6,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>1</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-16</td>
+                <td class="num">5,816</td>
+                <td class="num">128</td>
+                <td class="num engagement">5,944</td>
+                <td class="caption" title="Quando apareceu um nódulo no Mérlin, a única forma de ter certeza do que era, foi fazendo uma cirurgia e biópsia 💉 Essa espera me deixou ansiosa… 😰🦠  Confesso que dá um medo enorme passar por isso com">Quando apareceu um nódulo no Mérlin, a única forma de ter certeza do que era, foi fazendo uma cirurgia e biópsia 💉 Essa ...</td>
+                <td><a href="https://www.instagram.com/p/DV9ZVAIkc6o" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-20</td>
+                <td class="num">3,877</td>
+                <td class="num">244</td>
+                <td class="num engagement">4,121</td>
+                <td class="caption" title="Para nós, a melhor forma de comemorar o Dia Internacional da Felicidade é com finais felizes na vida dos nossos resgatados. 🐾  A alegria no rosto do Rodolfo e da Lara não deixa dúvidas: a Pipoca chego">Para nós, a melhor forma de comemorar o Dia Internacional da Felicidade é com finais felizes na vida dos nossos resgatad...</td>
+                <td><a href="https://www.instagram.com/p/DWG2-pODcsc" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-15</td>
+                <td class="num">2,797</td>
+                <td class="num">134</td>
+                <td class="num engagement">2,931</td>
+                <td class="caption" title="Eu amo dar trabalho para os meus funcionários 😌   Ainda bem que eles não tem gastos inesperados nessas situações porque tô segura e protegida com meu plano de saúde @doglife_oficial 💁‍♀️   Faça agora ">Eu amo dar trabalho para os meus funcionários 😌   Ainda bem que eles não tem gastos inesperados nessas situações porque ...</td>
+                <td><a href="https://www.instagram.com/p/DV6MPlrDvRq" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-11</td>
+                <td class="num">1,366</td>
+                <td class="num">37</td>
+                <td class="num engagement">1,403</td>
+                <td class="caption" title="Você sabe qual o melhor tipo de convênio para seu pet?   Uma dica importante: prefira planos sem coparticipação. Assim, você não precisa pagar taxas extras toda vez que usar consultas, exames ou proce">Você sabe qual o melhor tipo de convênio para seu pet?   Uma dica importante: prefira planos sem coparticipação. Assim, ...</td>
+                <td><a href="https://www.instagram.com/p/DVwiqL0CRZO" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-11</td>
+                <td class="num">531</td>
+                <td class="num">38</td>
+                <td class="num engagement">569</td>
+                <td class="caption" title="VALE A PENA TER UM SALSICHA EM CASA? 🌭  Já faz 60 dias que o @zecabilauzinho chegou na minha vida! E pensando nisso, reuni 5 pontos muito válidos sobre a minha experiência com esse queriduxo até agora">VALE A PENA TER UM SALSICHA EM CASA? 🌭  Já faz 60 dias que o @zecabilauzinho chegou na minha vida! E pensando nisso, reu...</td>
+                <td><a href="https://www.instagram.com/p/DVwgvNgEtKJ" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-23</td>
+                <td class="num">527</td>
+                <td class="num">36</td>
+                <td class="num engagement">563</td>
+                <td class="caption" title="Hoje foi dia de espalhar carinho no GRAACC. 💜  Com o Programa Love que Cuida, seguimos conectando histórias que precisavam se encontrar: crianças em tratamento e pets resgatados pelo @instituto.carame">Hoje foi dia de espalhar carinho no GRAACC. 💜  Com o Programa Love que Cuida, seguimos conectando histórias que precisav...</td>
+                <td><a href="https://www.instagram.com/p/DWPdQupDgKA" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-17</td>
+                <td class="num">466</td>
+                <td class="num">51</td>
+                <td class="num engagement">517</td>
+                <td class="caption" title="100% sincero, sem esconder suas opiniões… por mais que doam 😂  E se você também não quer que o seu cachorro te troque pela vizinha, assina o plano de saúde da @doglife_oficial. Com o cupom JOAQUIMPIT1">100% sincero, sem esconder suas opiniões… por mais que doam 😂  E se você também não quer que o seu cachorro te troque pe...</td>
+                <td><a href="https://www.instagram.com/p/DV_PCpcjibJ" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-23</td>
+                <td class="num">456</td>
+                <td class="num">15</td>
+                <td class="num engagement">471</td>
+                <td class="caption" title="A vontade é de emocionar vendo um casal tão lindo como esse! 💚">A vontade é de emocionar vendo um casal tão lindo como esse! 💚</td>
+                <td><a href="https://www.instagram.com/p/DWOeayDB85C" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-14</td>
+                <td class="num">386</td>
+                <td class="num">7</td>
+                <td class="num engagement">393</td>
+                <td class="caption" title="Seu pet mudou a sua vida?   Aqui na Dog, nossas vidas são mudadas constantemente por todos os pets espalhados pelo Brasil, e escutamos histórias lindas sobre cada um deles 🐾">Seu pet mudou a sua vida?   Aqui na Dog, nossas vidas são mudadas constantemente por todos os pets espalhados pelo Brasi...</td>
+                <td><a href="https://www.instagram.com/p/DV3TPMOkd9k" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-23</td>
+                <td class="num">273</td>
+                <td class="num">119</td>
+                <td class="num engagement">392</td>
+                <td class="caption" title="O Pet Bowl da Stanley chegou aqui 💜  Membros do Clube Petlove já podem garantir com exclusividade, além de 30% OFF por tempo limitado.  Feito com aço inox, resistente, fácil de limpar e com design pen">O Pet Bowl da Stanley chegou aqui 💜  Membros do Clube Petlove já podem garantir com exclusividade, além de 30% OFF por t...</td>
+                <td><a href="https://www.instagram.com/p/DWO6awUjXSJ" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-24</td>
+                <td class="num">315</td>
+                <td class="num">42</td>
+                <td class="num engagement">357</td>
+                <td class="caption" title="É migos nu tava fácil pa noi, noi tava PÓDI 🤢 i pa resolve esse pobleminha noi corremo pa ondi? Pa @petlovebrasil é claro né! Co o Clube de Serviços da Petlove oce ganha muuuinto disconto pa usa nos s">É migos nu tava fácil pa noi, noi tava PÓDI 🤢 i pa resolve esse pobleminha noi corremo pa ondi? Pa @petlovebrasil é clar...</td>
+                <td><a href="https://www.instagram.com/p/DWSAy80CQyY" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-11</td>
+                <td class="num">322</td>
+                <td class="num">18</td>
+                <td class="num engagement">340</td>
+                <td class="caption" title="Cuidar da saúde do Bento é uma das coisas mais importantes pra nós. E desde que o Bento tem plano de saúde da @doglife_oficial, nós ficamos muito mais em paz.   🚨Se você também quer essa segurança, us">Cuidar da saúde do Bento é uma das coisas mais importantes pra nós. E desde que o Bento tem plano de saúde da @doglife_o...</td>
+                <td><a href="https://www.instagram.com/p/DVweV4mkWA5" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-18</td>
+                <td class="num">306</td>
+                <td class="num">9</td>
+                <td class="num engagement">315</td>
+                <td class="caption" title="Quem nunca, né? 🫠 Se seu pet sempre cospe o remédio que você escondeu na comida dele, o motivo é simples: ele não é bobo! rs  Pets aprendem rápido e têm um forte instinto de sobrevivência, por isso, c">Quem nunca, né? 🫠 Se seu pet sempre cospe o remédio que você escondeu na comida dele, o motivo é simples: ele não é bobo...</td>
+                <td><a href="https://www.instagram.com/p/DWCx-TNBRuO" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-19</td>
+                <td class="num">240</td>
+                <td class="num">73</td>
+                <td class="num engagement">313</td>
+                <td class="caption" title="Vida eterna? Vampiros? Isso só existe na ficção.   Mas você pode fazer um Plano de Saúde Petlove pro seu pet e garantir uma vida mais longa e saudável, com vacinas em dia, consultas sempre que precisa">Vida eterna? Vampiros? Isso só existe na ficção.   Mas você pode fazer um Plano de Saúde Petlove pro seu pet e garantir ...</td>
+                <td><a href="https://www.instagram.com/p/DWEf0cAxhDk" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-01-26</td>
+                <td class="num">191</td>
+                <td class="num">94</td>
+                <td class="num engagement">285</td>
+                <td class="caption" title="A Dog Life é 𝙊 𝙋𝙡𝙖𝙣𝙤 de saúde pet preferido do Brasil!   🧑‍⚕️ Planos com ou sem carência  🧑‍⚕️ Sem coparticipação  🧑‍⚕️ Procedimentos pré-aprovados  🧑‍⚕️ Microchip não obrigatório  🧑‍⚕️ Cobertura flex">A Dog Life é 𝙊 𝙋𝙡𝙖𝙣𝙤 de saúde pet preferido do Brasil!   🧑‍⚕️ Planos com ou sem carência  🧑‍⚕️ Sem coparticipação  🧑‍⚕️ ...</td>
+                <td><a href="https://www.instagram.com/p/DT_KxcaETpm" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2023-12-31</td>
+                <td class="num">257</td>
+                <td class="num">23</td>
+                <td class="num engagement">280</td>
+                <td class="caption" title="A coparticipação é a chave para a saúde do seu pet e economia para o seu bolso 🔑. Saiba mais no vídeo e no site www.petlife.com.br">A coparticipação é a chave para a saúde do seu pet e economia para o seu bolso 🔑. Saiba mais no vídeo e no site www.petl...</td>
+                <td><a href="https://www.instagram.com/p/C1hRLGMOhRM" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-31</td>
+                <td class="num">254</td>
+                <td class="num">4</td>
+                <td class="num engagement">258</td>
+                <td class="caption" title="Qual é o look de vocês, aumigos?🥰🐾  #anonovopet #reveillonpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #cachorro #gato #planopet">Qual é o look de vocês, aumigos?🥰🐾  #anonovopet #reveillonpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #c...</td>
+                <td><a href="https://www.instagram.com/p/DEQUV0KPMxZ" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-17</td>
+                <td class="num">232</td>
+                <td class="num">11</td>
+                <td class="num engagement">243</td>
+                <td class="caption" title="A @doglife_oficial é a melhor escolha para proteger seu amor de 4 patas e VOCÊS TÊM DESCONTO!!!!   🎟️Usando o cupom CAROL15 você garante 15% OFF no plano que melhor te atender.   A gente sabe que cust">A @doglife_oficial é a melhor escolha para proteger seu amor de 4 patas e VOCÊS TÊM DESCONTO!!!!   🎟️Usando o cupom CARO...</td>
+                <td><a href="https://www.instagram.com/p/DV3pAYKkfIC" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-06</td>
+                <td class="num">204</td>
+                <td class="num">0</td>
+                <td class="num engagement">204</td>
+                <td class="caption" title="Qual é o look de vocês, aumigos?🥰🐾  #anonovopet #reveillonpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #cachorro #gato #planopet">Qual é o look de vocês, aumigos?🥰🐾  #anonovopet #reveillonpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #c...</td>
+                <td><a href="https://www.instagram.com/p/DDQAPCvoP_M" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>20</td>
+                <td><a href="https://www.instagram.com/doglife_oficial/" target="_blank">@doglife_oficial</a></td>
+                <td class="company-cell">doglife</td>
+                <td>2026-03-16</td>
+                <td class="num">182</td>
+                <td class="num">7</td>
+                <td class="num engagement">189</td>
+                <td class="caption" title="Quem aqui também sente que a casa mudou completamente depois que um pet chegou? 🐶🌿  Eles ocupam espaço no sofá, no quintal… e principalmente no coração. A rotina muda, o silêncio da casa muda e, de re">Quem aqui também sente que a casa mudou completamente depois que um pet chegou? 🐶🌿  Eles ocupam espaço no sofá, no quint...</td>
+                <td><a href="https://www.instagram.com/p/DV8K6HSDnv4" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>21</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-18</td>
+                <td class="num">171</td>
+                <td class="num">16</td>
+                <td class="num engagement">187</td>
+                <td class="caption" title="Nem sempre dá pra esperar. Nem sempre você está perto de um veterinário.  E é nessas horas que a telemedicina faz toda a diferença.  Com a Care, você pode ter orientação profissional onde estiver, de ">Nem sempre dá pra esperar. Nem sempre você está perto de um veterinário.  E é nessas horas que a telemedicina faz toda a...</td>
+                <td><a href="https://www.instagram.com/p/DWB7BjJFogN" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>22</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2025-12-15</td>
+                <td class="num">136</td>
+                <td class="num">48</td>
+                <td class="num engagement">184</td>
+                <td class="caption" title="Tudo começou com um susto  e uma certeza: a saúde dos nossos pets também precisa ser levada a sério.  A Care nasceu da experiência real de quem viu de perto o quanto pode ser difícil (e caro) cuidar d">Tudo começou com um susto  e uma certeza: a saúde dos nossos pets também precisa ser levada a sério.  A Care nasceu da e...</td>
+                <td><a href="https://www.instagram.com/p/DSSdGMKDe0A" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>23</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-24</td>
+                <td class="num">120</td>
+                <td class="num">53</td>
+                <td class="num engagement">173</td>
+                <td class="caption" title="Quem mais não vê a hora de abrir uma sacola dessa? 👀💜  Os Pet Bowls da Stanley estão disponíveis com exclusividade no nosso site, app e lojas!  Quem é membro do Clube Petlove tem 30% de desconto, não ">Quem mais não vê a hora de abrir uma sacola dessa? 👀💜  Os Pet Bowls da Stanley estão disponíveis com exclusividade no no...</td>
+                <td><a href="https://www.instagram.com/p/DWRXzVLRSYF" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>24</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-20</td>
+                <td class="num">104</td>
+                <td class="num">69</td>
+                <td class="num engagement">173</td>
+                <td class="caption" title="Em festival a gente vê vários estilos diferentes… e com os pets não seria diferente, né? 💜  Conta pra gente: qual vibe representa o seu pet? 👇">Em festival a gente vê vários estilos diferentes… e com os pets não seria diferente, né? 💜  Conta pra gente: qual vibe r...</td>
+                <td><a href="https://www.instagram.com/p/DWHuWzWCeqa" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>25</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-22</td>
+                <td class="num">95</td>
+                <td class="num">68</td>
+                <td class="num engagement">163</td>
+                <td class="caption" title="Era só um item… aí lembrou de outro… e mais um… e mais um   Mês do Consumidor Petlove com até 60% OFF. Sem julgamentos… seu pet exige, nós atendemos 💜">Era só um item… aí lembrou de outro… e mais um… e mais um   Mês do Consumidor Petlove com até 60% OFF. Sem julgamentos… ...</td>
+                <td><a href="https://www.instagram.com/p/DWMO8J4jRPf" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>26</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-23</td>
+                <td class="num">161</td>
+                <td class="num">0</td>
+                <td class="num engagement">161</td>
+                <td class="caption" title="Aumigos, alguém sabe quem é?🎅  #natalpet #feliznatalpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #cachorro #gato #planopet">Aumigos, alguém sabe quem é?🎅  #natalpet #feliznatalpet #meupetclub #planodesaudepet #saudepet #reembolso #pets #cachorr...</td>
+                <td><a href="https://www.instagram.com/p/DD7vuHQM00Y" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>27</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-19</td>
+                <td class="num">67</td>
+                <td class="num">61</td>
+                <td class="num engagement">128</td>
+                <td class="caption" title="Produtos exclusivos da Coleção Petlove, disponíveis pra pets e humanos.  E tem mais: membros do Clube têm 35% OFF.  E o melhor: o lucro da venda desses produtos será destinado à ONGs que ajudam a cuid">Produtos exclusivos da Coleção Petlove, disponíveis pra pets e humanos.  E tem mais: membros do Clube têm 35% OFF.  E o ...</td>
+                <td><a href="https://www.instagram.com/p/DWFI_tBR1sP" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>28</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2025-11-14</td>
+                <td class="num">85</td>
+                <td class="num">35</td>
+                <td class="num engagement">120</td>
+                <td class="caption" title="A Rede Credenciada WeVets chega para elevar o cuidado com o seu pet a outro nível.   Mais acesso, mais especialidades, mais profissionais. Tudo conectado para garantir um atendimento rápido, seguro e ">A Rede Credenciada WeVets chega para elevar o cuidado com o seu pet a outro nível.   Mais acesso, mais especialidades, m...</td>
+                <td><a href="https://www.instagram.com/p/DRDNresAaVP" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>29</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-06-27</td>
+                <td class="num">82</td>
+                <td class="num">37</td>
+                <td class="num engagement">119</td>
+                <td class="caption" title="Tinha dúvidas sobre como era ter um plano de saúde do Meu Pet Club? Nesse post te mostramos todas as etapas do nosso plano de saúde pet. 🩷  Viu como é fácil? Com o Meu Pet Club não tem dor de cabeça! ">Tinha dúvidas sobre como era ter um plano de saúde do Meu Pet Club? Nesse post te mostramos todas as etapas do nosso pla...</td>
+                <td><a href="https://www.instagram.com/p/C8u6e0TPvJX" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>30</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-13</td>
+                <td class="num">65</td>
+                <td class="num">47</td>
+                <td class="num engagement">112</td>
+                <td class="caption" title="Você já parou para pensar como funciona o plano de saúde pet em Nova York?🐶🐱  O planejamento da saúde do animal já faz parte da cultura de muitos tutores nos Estados Unidos. Prevenção deixou de ser op">Você já parou para pensar como funciona o plano de saúde pet em Nova York?🐶🐱  O planejamento da saúde do animal já faz p...</td>
+                <td><a href="https://www.instagram.com/p/DV1DF49u_DS" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>31</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-16</td>
+                <td class="num">65</td>
+                <td class="num">26</td>
+                <td class="num engagement">91</td>
+                <td class="caption" title="Cuidar da saúde do seu pet não precisa esperar 🐶  Com a PetLife você tem carência zero para consultas generalistas e vacinas, ou seja: precisou, já pode usar.  Mais tranquilidade pra quem ama cuidar 💙">Cuidar da saúde do seu pet não precisa esperar 🐶  Com a PetLife você tem carência zero para consultas generalistas e vac...</td>
+                <td><a href="https://www.instagram.com/p/DV9Zz22kpQk" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>32</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-24</td>
+                <td class="num">3</td>
+                <td class="num">78</td>
+                <td class="num engagement">81</td>
+                <td class="caption" title="A dúvida é comum: “Será que vale a pena ter um plano de saúde para o meu pet mesmo ele estando saudável?” 🤔🐾  Muita gente acredita que o plano só faz sentido quando o pet fica doente. Mas a verdade é ">A dúvida é comum: “Será que vale a pena ter um plano de saúde para o meu pet mesmo ele estando saudável?” 🤔🐾  Muita gent...</td>
+                <td><a href="https://www.instagram.com/p/DWR4o8UvAUZ" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>33</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-06</td>
+                <td class="num">61</td>
+                <td class="num">9</td>
+                <td class="num engagement">70</td>
+                <td class="caption" title="Começamos essa série direto de Nova York 🐾  Visitamos a Home Doggy, uma empresa com mais de 20 anos de atuação no mercado pet, que construiu sua reputação baseada em confiança, relacionamento e visão ">Começamos essa série direto de Nova York 🐾  Visitamos a Home Doggy, uma empresa com mais de 20 anos de atuação no mercad...</td>
+                <td><a href="https://www.instagram.com/p/DVjCJNhDZM6" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>34</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-05</td>
+                <td class="num">66</td>
+                <td class="num">2</td>
+                <td class="num engagement">68</td>
+                <td class="caption" title="🥼🐶Minuto Vet: Fisioterapia e Acupuntura para pets.  Sabia que essas áreas da veterinária são excelentes formas de recuperação de lesões, doenças e cirurgias?   E é claro que ambos os procedimentos est">🥼🐶Minuto Vet: Fisioterapia e Acupuntura para pets.  Sabia que essas áreas da veterinária são excelentes formas de recupe...</td>
+                <td><a href="https://www.instagram.com/p/DDNZ6xRPRCc" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>35</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-23</td>
+                <td class="num">57</td>
+                <td class="num">7</td>
+                <td class="num engagement">64</td>
+                <td class="caption" title="Interior 🏡 ou capital 🏙️… o importante é estar protegido!   A gente vive indo pra Bauru/SP com o Baco, e mesmo ele sendo saudável, dá uma tranquilidade enorme saber que o plano de saúde da @petlife.co">Interior 🏡 ou capital 🏙️… o importante é estar protegido!   A gente vive indo pra Bauru/SP com o Baco, e mesmo ele sendo...</td>
+                <td><a href="https://www.instagram.com/p/DWPldn4DhcH" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>36</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-02-11</td>
+                <td class="num">47</td>
+                <td class="num">16</td>
+                <td class="num engagement">63</td>
+                <td class="caption" title="Ei, tutor! Já conhece a Pet Life?💕  Somos o planos de saúde para cães e gatos que garante os melhores cuidados veterinários para o seu pet, por um preço cabe no bolso 💸  Com a Pet Life, você tem: 🐶A c">Ei, tutor! Já conhece a Pet Life?💕  Somos o planos de saúde para cães e gatos que garante os melhores cuidados veterinár...</td>
+                <td><a href="https://www.instagram.com/p/DUoEOLSETs7" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>37</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-06-26</td>
+                <td class="num">51</td>
+                <td class="num">7</td>
+                <td class="num engagement">58</td>
+                <td class="caption" title="✨💜 Quer saber qual é o plano ideal para você? Dê uma olhada nesse post que te contamos as principais características de cada um deles!  👨‍💻 Mas não é só isso, é sempre bom lembrar que cada plano tem m">✨💜 Quer saber qual é o plano ideal para você? Dê uma olhada nesse post que te contamos as principais características de ...</td>
+                <td><a href="https://www.instagram.com/p/C8sEgzIvuEz" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>38</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-12</td>
+                <td class="num">3</td>
+                <td class="num">54</td>
+                <td class="num engagement">57</td>
+                <td class="caption" title="Chegou a hora de celebrar! 🎉✨  Há 13 anos, Raphael Clímaco, CEO da Plamev, transformou seu propósito de cuidar dos pets em uma realidade que não para de crescer.  Comemorar esta data é honrar cada ate">Chegou a hora de celebrar! 🎉✨  Há 13 anos, Raphael Clímaco, CEO da Plamev, transformou seu propósito de cuidar dos pets ...</td>
+                <td><a href="https://www.instagram.com/p/DVy8vb8Dcnw" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>39</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-10</td>
+                <td class="num">46</td>
+                <td class="num">5</td>
+                <td class="num engagement">51</td>
+                <td class="caption" title="Você sabe a diferença entre planos pet de por coparticipação e por reembolso?🥼🐾  Não contrate um plano pro seu peludo sem conferir essas diferenças. Vem conferir!🩷  #redecredenciada #coparticipação #p">Você sabe a diferença entre planos pet de por coparticipação e por reembolso?🥼🐾  Não contrate um plano pro seu peludo se...</td>
+                <td><a href="https://www.instagram.com/p/DDaRvTTJ_Fl" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>40</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-04</td>
+                <td class="num">36</td>
+                <td class="num">9</td>
+                <td class="num engagement">45</td>
+                <td class="caption" title="“Plano pet com coparticipação realmente vale a pena?”  Essa é uma das dúvidas mais comuns entre tutores e também uma das que mais geram confusão na hora de decidir.  Nem todo plano é igual. Nem toda e">“Plano pet com coparticipação realmente vale a pena?”  Essa é uma das dúvidas mais comuns entre tutores e também uma das...</td>
+                <td><a href="https://www.instagram.com/p/DVd36kcDE8p" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>41</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2025-04-25</td>
+                <td class="num">25</td>
+                <td class="num">14</td>
+                <td class="num engagement">39</td>
+                <td class="caption" title="Você tem alguma dúvida sobre a utilização do plano de saúde pet Meu Pet Club?  🐾 Neste vídeo você vai ver: • O que é importante organizar antes da consulta; • Quais são os documentos necessários para ">Você tem alguma dúvida sobre a utilização do plano de saúde pet Meu Pet Club?  🐾 Neste vídeo você vai ver: • O que é imp...</td>
+                <td><a href="https://www.instagram.com/p/DI33vnutlx1" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>42</td>
+                <td><a href="https://www.instagram.com/petlovebrasil/" target="_blank">@petlovebrasil</a></td>
+                <td class="company-cell">petlove</td>
+                <td>2026-03-21</td>
+                <td class="num">3</td>
+                <td class="num">35</td>
+                <td class="num engagement">38</td>
+                <td class="caption" title="Se o seu pet pudesse fazer uma lista de exigências, quanto você acha que custaria? 😂🐾  A Athena já resolveu isso aqui em casa com o Clube Petlove, que nesse mês do consumidor está com descontos de até">Se o seu pet pudesse fazer uma lista de exigências, quanto você acha que custaria? 😂🐾  A Athena já resolveu isso aqui em...</td>
+                <td><a href="https://www.instagram.com/p/DWJ3Du9jtbt" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>43</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-20</td>
+                <td class="num">35</td>
+                <td class="num">2</td>
+                <td class="num engagement">37</td>
+                <td class="caption" title="O cuidado com os pets está evoluindo no mundo inteiro. 🐾  Hoje, esperar o problema acontecer já não é mais o ideal. A tendência é antecipar, acompanhar e oferecer suporte contínuo. Quanto mais o tutor">O cuidado com os pets está evoluindo no mundo inteiro. 🐾  Hoje, esperar o problema acontecer já não é mais o ideal. A te...</td>
+                <td><a href="https://www.instagram.com/p/DWHEqrNOL0r" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>44</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-16</td>
+                <td class="num">27</td>
+                <td class="num">0</td>
+                <td class="num engagement">27</td>
+                <td class="caption" title="não sei se eu queria ter ele ou ser ele, simplesmente a coisa mais fofa do mundo 😭">não sei se eu queria ter ele ou ser ele, simplesmente a coisa mais fofa do mundo 😭</td>
+                <td><a href="https://www.instagram.com/p/DV9T7SiAS6-" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>45</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-10</td>
+                <td class="num">23</td>
+                <td class="num">0</td>
+                <td class="num engagement">23</td>
+                <td class="caption" title="Um pede beijo. O outro aceita. Cinco segundos depois: “não encosta em mim.”​ Aí eles brigam, voltam, pedem atenção, desistem… e dormem juntos como se nada tivesse acontecido. 😼😽💛​ Vida de gateiro é as">Um pede beijo. O outro aceita. Cinco segundos depois: “não encosta em mim.”​ Aí eles brigam, voltam, pedem atenção, desi...</td>
+                <td><a href="https://www.instagram.com/p/DVtUundmpOq" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>46</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-12</td>
+                <td class="num">18</td>
+                <td class="num">4</td>
+                <td class="num engagement">22</td>
+                <td class="caption" title="Proteção completa para o seu pet a preços imperdíveis! 🐕🐈💰  Arraste para o lado para conhecer nossas opções de planos e aproveite todas as vantagens:  🩷 A cobertura mais completa do mercado 🩷 Valor ún">Proteção completa para o seu pet a preços imperdíveis! 🐕🐈💰  Arraste para o lado para conhecer nossas opções de planos e ...</td>
+                <td><a href="https://www.instagram.com/p/DVyxc0mFl8m" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>47</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-11</td>
+                <td class="num">3</td>
+                <td class="num">19</td>
+                <td class="num engagement">22</td>
+                <td class="caption" title="Já parou para pensar na velhice do seu melhor amigo? 🐕  A história do Raj é o exemplo perfeito de como o cuidado preventivo pode transformar o futuro de um pet.   Desde a adoção, a tutora Fernanda ent">Já parou para pensar na velhice do seu melhor amigo? 🐕  A história do Raj é o exemplo perfeito de como o cuidado prevent...</td>
+                <td><a href="https://www.instagram.com/p/DVwgeY2EgAB" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>48</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-16</td>
+                <td class="num">20</td>
+                <td class="num">1</td>
+                <td class="num engagement">21</td>
+                <td class="caption" title="Todo tutor quer a mesma coisa: ver seu pet viver mais e com qualidade de vida. 🐾  A boa notícia é que alguns cuidados simples no dia a dia fazem toda a diferença na saúde e na longevidade deles.  Alim">Todo tutor quer a mesma coisa: ver seu pet viver mais e com qualidade de vida. 🐾  A boa notícia é que alguns cuidados si...</td>
+                <td><a href="https://www.instagram.com/p/DV8xbm8Dbi6" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>49</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2025-08-11</td>
+                <td class="num">14</td>
+                <td class="num">6</td>
+                <td class="num engagement">20</td>
+                <td class="caption" title="Valorização real vai além do óbvio. #BenefícioComPropósito   #Faciap #MeuPetClub #BenefíciosCorporativos #PlanoDeSaúdePet">Valorização real vai além do óbvio. #BenefícioComPropósito   #Faciap #MeuPetClub #BenefíciosCorporativos #PlanoDeSaúdePe...</td>
+                <td><a href="https://www.instagram.com/p/DNN5jbYsrhX" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>50</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-23</td>
+                <td class="num">20</td>
+                <td class="num">0</td>
+                <td class="num engagement">20</td>
+                <td class="caption" title="E você? Sabia o porquê de Frajola?">E você? Sabia o porquê de Frajola?</td>
+                <td><a href="https://www.instagram.com/p/DWOeW_xRjYq" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>51</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-16</td>
+                <td class="num">3</td>
+                <td class="num">16</td>
+                <td class="num engagement">19</td>
+                <td class="caption" title="A Plamev trabalha diariamente para garantir o bem-estar do seu pet! 🐾  Mas você já se perguntou como são os bastidores dessa operação?   No vídeo de hoje, conheça os setores que atuam em cada etapa da">A Plamev trabalha diariamente para garantir o bem-estar do seu pet! 🐾  Mas você já se perguntou como são os bastidores d...</td>
+                <td><a href="https://www.instagram.com/p/DV9M5lCCXRg" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>52</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-13</td>
+                <td class="num">13</td>
+                <td class="num">0</td>
+                <td class="num engagement">13</td>
+                <td class="caption" title="Quando o seu pet precisa de cuidado, a última coisa que você quer é preocupação.  Com a APet, você tem liberdade para escolher qualquer clínica do Brasil e solicitar reembolso, sem abrir mão do cuidad">Quando o seu pet precisa de cuidado, a última coisa que você quer é preocupação.  Com a APet, você tem liberdade para es...</td>
+                <td><a href="https://www.instagram.com/p/DV0ujDQiDvY" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>53</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-09</td>
+                <td class="num">12</td>
+                <td class="num">1</td>
+                <td class="num engagement">13</td>
+                <td class="caption" title="Nem sempre os sinais aparecem de forma óbvia.  Às vezes, pequenas mudanças no comportamento do seu pet podem indicar que algo não está indo bem com a alimentação.  Fique atento a alguns sinais importa">Nem sempre os sinais aparecem de forma óbvia.  Às vezes, pequenas mudanças no comportamento do seu pet podem indicar que...</td>
+                <td><a href="https://www.instagram.com/p/DVqv4Aujdxg" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>54</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-08</td>
+                <td class="num">7</td>
+                <td class="num">5</td>
+                <td class="num engagement">12</td>
+                <td class="caption" title="Mulheres que cuidam, amam e fazem o impossível por seus pets.   Hoje celebramos a força, o carinho e a dedicação de cada uma de vocês.  Feliz Dia da Mulher! 💕🐾  #diainternacionaldamulher #diadamulher ">Mulheres que cuidam, amam e fazem o impossível por seus pets.   Hoje celebramos a força, o carinho e a dedicação de cada...</td>
+                <td><a href="https://www.instagram.com/p/DVnvnWXjfiX" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>55</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-18</td>
+                <td class="num">10</td>
+                <td class="num">1</td>
+                <td class="num engagement">11</td>
+                <td class="caption" title="Gatos também podem consumir algumas plantas desde que sejam seguras 🐾🌱  Sempre ofereça como complemento, frescas e em moderação. Elas não substituem a ração.  Conte com a APet pra cuidar do seu amigo ">Gatos também podem consumir algumas plantas desde que sejam seguras 🐾🌱  Sempre ofereça como complemento, frescas e em mo...</td>
+                <td><a href="https://www.instagram.com/p/DWBjIoDgEjE" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>56</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-20</td>
+                <td class="num">3</td>
+                <td class="num">8</td>
+                <td class="num engagement">11</td>
+                <td class="caption" title="Nem estudam e nem trabalham... Só fazem bagunça e depois dormem como se tivessem tido um dia duro de trabalho 🤣  Você também tem um jovem assim em casa? 🐾">Nem estudam e nem trabalham... Só fazem bagunça e depois dormem como se tivessem tido um dia duro de trabalho 🤣  Você ta...</td>
+                <td><a href="https://www.instagram.com/p/DWHElndBLzr" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>57</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-19</td>
+                <td class="num">11</td>
+                <td class="num">0</td>
+                <td class="num engagement">11</td>
+                <td class="caption" title="Na Pet Life, você que tem o controle, o microchip é totalmente opcional para você e seu filho(a) de patas! 🩷">Na Pet Life, você que tem o controle, o microchip é totalmente opcional para você e seu filho(a) de patas! 🩷</td>
+                <td><a href="https://www.instagram.com/p/DWEY60WRqGI" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>58</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-17</td>
+                <td class="num">9</td>
+                <td class="num">2</td>
+                <td class="num engagement">11</td>
+                <td class="caption" title="A Pet Life tem um presentinho para vocês…🩷  O momento ideal para ter o plano e a saúde do seu pet garantida é AGORA!">A Pet Life tem um presentinho para vocês…🩷  O momento ideal para ter o plano e a saúde do seu pet garantida é AGORA!</td>
+                <td><a href="https://www.instagram.com/p/DWAFvX3Aefz" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>59</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-06</td>
+                <td class="num">9</td>
+                <td class="num">1</td>
+                <td class="num engagement">10</td>
+                <td class="caption" title="E se o seu pet se perder… ele consegue voltar para você?  A APet apresenta uma solução inteligente para tutores que não abrem mão da segurança: a Tag Localizadora com QR Code.  🔎 Como funciona? Basta ">E se o seu pet se perder… ele consegue voltar para você?  A APet apresenta uma solução inteligente para tutores que não ...</td>
+                <td><a href="https://www.instagram.com/p/DVitDXzjf8X" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>60</td>
+                <td><a href="https://www.instagram.com/meupetclub/" target="_blank">@meupetclub</a></td>
+                <td class="company-cell">meupetclub</td>
+                <td>2024-12-07</td>
+                <td class="num">9</td>
+                <td class="num">1</td>
+                <td class="num engagement">10</td>
+                <td class="caption" title="Spoiler: é impossível🐾😜  Todas as cidades do Brasil estão inclusas em nossa cobertura! Isso por que nosso plano de saúde funciona por meio de reembolso.  Quer saber mais? Entre no link da nossa bio e ">Spoiler: é impossível🐾😜  Todas as cidades do Brasil estão inclusas em nossa cobertura! Isso por que nosso plano de saúde...</td>
+                <td><a href="https://www.instagram.com/p/DDR7-jZPo-W" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>61</td>
+                <td><a href="https://www.instagram.com/caresaudeanimal/" target="_blank">@caresaudeanimal</a></td>
+                <td class="company-cell">caresaudeanimal</td>
+                <td>2026-03-23</td>
+                <td class="num">10</td>
+                <td class="num">0</td>
+                <td class="num engagement">10</td>
+                <td class="caption" title="A hidratação do seu pet pode parecer simples… mas faz toda a diferença na saúde dele. 🐾💧  Muitos problemas podem começar justamente por algo básico: falta de água suficiente no dia a dia.  Manter a ág">A hidratação do seu pet pode parecer simples… mas faz toda a diferença na saúde dele. 🐾💧  Muitos problemas podem começar...</td>
+                <td><a href="https://www.instagram.com/p/DWOzByqjScK" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>62</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-10</td>
+                <td class="num">3</td>
+                <td class="num">6</td>
+                <td class="num engagement">9</td>
+                <td class="caption" title="O olfato do seu melhor amigo dificilmente se engana e reconhece de longe quem prioriza o bem-estar dos pets. 🐾🐱  Mas para proteger a saúde do peludinho na prática, o tutor precisa manter o cuidado pre">O olfato do seu melhor amigo dificilmente se engana e reconhece de longe quem prioriza o bem-estar dos pets. 🐾🐱  Mas par...</td>
+                <td><a href="https://www.instagram.com/p/DVtUrIHDYMj" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>63</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-02-28</td>
+                <td class="num">3</td>
+                <td class="num">5</td>
+                <td class="num engagement">8</td>
+                <td class="caption" title="Quem ama, protege. E quando algo foge do normal, seja de madrugada, no feriado ou no domingo à noite, você precisa saber exatamente para onde ir.  Os Hospitais Veterinários da WeVets funcionam 24 hora">Quem ama, protege. E quando algo foge do normal, seja de madrugada, no feriado ou no domingo à noite, você precisa saber...</td>
+                <td><a href="https://www.instagram.com/p/DVTkxUIDfUR" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>64</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-06</td>
+                <td class="num">5</td>
+                <td class="num">2</td>
+                <td class="num engagement">7</td>
+                <td class="caption" title="E se o seu pet se perder… ele consegue voltar para você?  A APet apresenta uma solução inteligente para tutores que não abrem mão da segurança: a Tag Localizadora com QR Code.  🔎 Como funciona?  Basta">E se o seu pet se perder… ele consegue voltar para você?  A APet apresenta uma solução inteligente para tutores que não ...</td>
+                <td><a href="https://www.instagram.com/p/DViv35bFCw4" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>65</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-19</td>
+                <td class="num">7</td>
+                <td class="num">0</td>
+                <td class="num engagement">7</td>
+                <td class="caption" title="🍂 O outono chegou e ele também muda a rotina do seu pet. Queda de temperatura, aumento de alergias e mais umidade no ambiente podem impactar a saúde respiratória e a pele dos animais. E muitos sinais ">🍂 O outono chegou e ele também muda a rotina do seu pet. Queda de temperatura, aumento de alergias e mais umidade no amb...</td>
+                <td><a href="https://www.instagram.com/p/DWEp_JigDMq" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>66</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-16</td>
+                <td class="num">7</td>
+                <td class="num">0</td>
+                <td class="num engagement">7</td>
+                <td class="caption" title="Na Semana do Consumidor, o convite é refletir sobre escolhas mais conscientes, especialmente quando elas envolvem quem depende totalmente de nós.​  Cuidar de um pet vai além do carinho. É buscar infor">Na Semana do Consumidor, o convite é refletir sobre escolhas mais conscientes, especialmente quando elas envolvem quem d...</td>
+                <td><a href="https://www.instagram.com/p/DV8xa7HD7Gr" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>67</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-06</td>
+                <td class="num">7</td>
+                <td class="num">0</td>
+                <td class="num engagement">7</td>
+                <td class="caption" title="As verminoses estão entre os problemas mais comuns em cães e gatos e muitas vezes passam despercebidas no início.​  Existem diversos tipos de vermífugos, com indicações e frequências diferentes.​ A au">As verminoses estão entre os problemas mais comuns em cães e gatos e muitas vezes passam despercebidas no início.​  Exis...</td>
+                <td><a href="https://www.instagram.com/p/DVjBlDsjXG-" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>68</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-23</td>
+                <td class="num">3</td>
+                <td class="num">4</td>
+                <td class="num engagement">7</td>
+                <td class="caption" title="Já ouviu o ditado popular “quem procura, acha”?   Comum no dia a dia dos brasileiros, a frase vale para diversas situações… menos para a saúde — dos tutores e, claro, seus pets. 💚🐾  Quando o assunto é">Já ouviu o ditado popular “quem procura, acha”?   Comum no dia a dia dos brasileiros, a frase vale para diversas situaçõ...</td>
+                <td><a href="https://www.instagram.com/p/DWPM1epFD-y" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>69</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-14</td>
+                <td class="num">6</td>
+                <td class="num">0</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="Hoje é o dia de todas as vidas que sentem, confiam e amam sem pedir nada em troca. Cuidar dos animais é um ato de respeito, responsabilidade e amor diário.  Que possamos escolher proteger, acolher e g">Hoje é o dia de todas as vidas que sentem, confiam e amam sem pedir nada em troca. Cuidar dos animais é um ato de respei...</td>
+                <td><a href="https://www.instagram.com/p/DV3TdXHjmtC" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>70</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-02-18</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="Se o ano só começa depois do Carnaval… então chegou a hora de começar a cuidar da saúde do seu pet!  Cuidar é saber que, aconteça o que acontecer, você não está sozinho. Conheça o Plano de Saúde Pet d">Se o ano só começa depois do Carnaval… então chegou a hora de começar a cuidar da saúde do seu pet!  Cuidar é saber que,...</td>
+                <td><a href="https://www.instagram.com/p/DU50whDDWN5" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>71</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-23</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="Prevenir é mais barato que tratar, mas muitos tutores só percebem isso quando o problema já está avançado. Grande parte dos gastos com a saúde do seu pet podem vir da falta de prevenção ou decisões ad">Prevenir é mais barato que tratar, mas muitos tutores só percebem isso quando o problema já está avançado. Grande parte ...</td>
+                <td><a href="https://www.instagram.com/p/DWOzHFZiLmU" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>72</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-16</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="No Dia Nacional do Dermatologista Veterinário, a Dra. Analice Munhoz, especialista da WeVets, compartilha orientações importantes sobre como prevenir problemas de pele em pets. Dê play e confira as di">No Dia Nacional do Dermatologista Veterinário, a Dra. Analice Munhoz, especialista da WeVets, compartilha orientações im...</td>
+                <td><a href="https://www.instagram.com/p/DV8xtglDTQN" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>73</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-14</td>
+                <td class="num">6</td>
+                <td class="num">0</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="O Dia dos Animais é um convite à consciência.​  Ter um pet vai além do carinho e da companhia.​ É sobre responsabilidade, cuidado com a saúde, atenção aos sinais e escolhas que garantem bem‑estar ao l">O Dia dos Animais é um convite à consciência.​  Ter um pet vai além do carinho e da companhia.​ É sobre responsabilidade...</td>
+                <td><a href="https://www.instagram.com/p/DV3oFhtCAP9" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>74</td>
+                <td><a href="https://www.instagram.com/petlife.com.br/" target="_blank">@petlife.com.br</a></td>
+                <td class="company-cell">petlife</td>
+                <td>2026-03-18</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="💙 Março Azul lembra a importância de cuidar da saúde gastrointestinal dos pets   Sinais como fezes moles frequentes, perda de apetite ou vômitos merecem atenção e investigação  A Pet Life está sem car">💙 Março Azul lembra a importância de cuidar da saúde gastrointestinal dos pets   Sinais como fezes moles frequentes, per...</td>
+                <td><a href="https://www.instagram.com/p/DWCULeKBe-V" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>75</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-20</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="🚨 Tutor, este é um recado para você!  Não é novidade dizer que o cuidado preventivo é o principal aliado da saúde pet, certo?  Mas, se ainda restam dúvidas sobre por que contratar o plano de saúde pet">🚨 Tutor, este é um recado para você!  Não é novidade dizer que o cuidado preventivo é o principal aliado da saúde pet, c...</td>
+                <td><a href="https://www.instagram.com/p/DWHSVaSDcHH" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>76</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-18</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="Quando tudo começou por aqui, a Babi ainda era só um filhote 🐾💙  Hoje, 13 anos depois, sua história ao lado da tutora Gildeia é celebrada no Hall da Fama Plamev.  Essa dupla pra lá de unida é o exempl">Quando tudo começou por aqui, a Babi ainda era só um filhote 🐾💙  Hoje, 13 anos depois, sua história ao lado da tutora Gi...</td>
+                <td><a href="https://www.instagram.com/p/DWCXI9wkk3r" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>77</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-06</td>
+                <td class="num">3</td>
+                <td class="num">3</td>
+                <td class="num engagement">6</td>
+                <td class="caption" title="Cuidar do seu melhor amigo não precisa ser um jogo de memória 🧠✨  Mas se você, tutor, ainda tem dúvidas sobre as cores que fazem de março o mês da saúde preventiva para os pets, não se preocupe. A Pla">Cuidar do seu melhor amigo não precisa ser um jogo de memória 🧠✨  Mas se você, tutor, ainda tem dúvidas sobre as cores q...</td>
+                <td><a href="https://www.instagram.com/p/DVjaPBrjAP2" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>78</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-20</td>
+                <td class="num">5</td>
+                <td class="num">0</td>
+                <td class="num engagement">5</td>
+                <td class="caption" title="O outono chegou e é hora de cuidar do seu pet com atenção redobrada! 🍁🐶🐱  O clima mais ameno é ótimo para eles, mas o tempo seco e as mudanças de temperatura podem afetar a saúde e o bem-estar.  Com p">O outono chegou e é hora de cuidar do seu pet com atenção redobrada! 🍁🐶🐱  O clima mais ameno é ótimo para eles, mas o te...</td>
+                <td><a href="https://www.instagram.com/p/DWGwA6LiH5R" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>79</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-21</td>
+                <td class="num">3</td>
+                <td class="num">2</td>
+                <td class="num engagement">5</td>
+                <td class="caption" title="Ser pai de pet é transformar cuidado em rotina, carinho e segurança para quem depende totalmente de você 💙  E para você? Ser pai de pet é… complete nos comentários!">Ser pai de pet é transformar cuidado em rotina, carinho e segurança para quem depende totalmente de você 💙  E para você?...</td>
+                <td><a href="https://www.instagram.com/p/DWJpZkMjPVr" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>80</td>
+                <td><a href="https://www.instagram.com/plamevoficial/" target="_blank">@plamevoficial</a></td>
+                <td class="company-cell">plamev</td>
+                <td>2026-03-09</td>
+                <td class="num">3</td>
+                <td class="num">2</td>
+                <td class="num engagement">5</td>
+                <td class="caption" title="O focinho ficou mais branco, a caminhada está mais lenta, mas o amor… ah, esse só cresce. 🤍🐾  Na maioridade pet é comum que tutores acreditem que o “desânimo” faz parte da velhice do peludinho.  Mas, ">O focinho ficou mais branco, a caminhada está mais lenta, mas o amor… ah, esse só cresce. 🤍🐾  Na maioridade pet é comum ...</td>
+                <td><a href="https://www.instagram.com/p/DVrLUvLCS9u" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>81</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-22</td>
+                <td class="num">4</td>
+                <td class="num">0</td>
+                <td class="num engagement">4</td>
+                <td class="caption" title="Hoje é o Dia Mundial da Água! 💧  A hidratação é essencial para o bem-estar dos nossos pets. Mantém a energia, ajuda na digestão, cuida da pele e garante saúde em geral.  #diamundialdaagua #hidratacaop">Hoje é o Dia Mundial da Água! 💧  A hidratação é essencial para o bem-estar dos nossos pets. Mantém a energia, ajuda na d...</td>
+                <td><a href="https://www.instagram.com/p/DWL5rODFnGc" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>82</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-16</td>
+                <td class="num">4</td>
+                <td class="num">0</td>
+                <td class="num engagement">4</td>
+                <td class="caption" title="Hoje celebramos os dermatologistas veterinários, profissionais que cuidam da pele, pelo e bem-estar dos nossos pets 🐾  Se o seu pet sofre com coceiras, alergias ou problemas de pele, conte com um espe">Hoje celebramos os dermatologistas veterinários, profissionais que cuidam da pele, pelo e bem-estar dos nossos pets 🐾  S...</td>
+                <td><a href="https://www.instagram.com/p/DV8V8lBiJ6K" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>83</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-02</td>
+                <td class="num">4</td>
+                <td class="num">0</td>
+                <td class="num engagement">4</td>
+                <td class="caption" title="Durante o Março Azul‑Marinho, o alerta é sobre as doenças do trato intestinal que podem afetar cães e gatos, muitas vezes de forma silenciosa, mas com grandes riscos à saúde do animal.​  Parasitos, in">Durante o Março Azul‑Marinho, o alerta é sobre as doenças do trato intestinal que podem afetar cães e gatos, muitas veze...</td>
+                <td><a href="https://www.instagram.com/p/DVYuSK3lSVw" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>84</td>
+                <td><a href="https://www.instagram.com/apetsaude/" target="_blank">@apetsaude</a></td>
+                <td class="company-cell">apetsaude</td>
+                <td>2026-03-24</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num engagement">3</td>
+                <td class="caption" title="🎶 Playlist favorita do seu pet: - Voz do humano favorito - Chave de casa (alerta de felicidade!) - Pote de ração balançando (🍽️😍) - Brinquedos em ação - Sons da natureza 🌿  Pra gente são sons comuns… ">🎶 Playlist favorita do seu pet: - Voz do humano favorito - Chave de casa (alerta de felicidade!) - Pote de ração balança...</td>
+                <td><a href="https://www.instagram.com/p/DWRDTsYGs4c" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>85</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-22</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num engagement">3</td>
+                <td class="caption" title="Nossos pets são muito mais que animais de estimação, eles são família. E quando a gente ama como família, a preocupação vai além do agora. Muita gente se pergunta: é possível deixar herança para o pet">Nossos pets são muito mais que animais de estimação, eles são família. E quando a gente ama como família, a preocupação ...</td>
+                <td><a href="https://www.instagram.com/p/DWNFM8ejQzk" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>86</td>
+                <td><a href="https://www.instagram.com/we.vets/" target="_blank">@we.vets</a></td>
+                <td class="company-cell">planowevets</td>
+                <td>2026-03-19</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num engagement">3</td>
+                <td class="caption" title="Cães e gatos demonstram afeto de formas diferentes, mas escolher ficar perto, dormir ao seu lado, procurar você nos momentos difíceis diz muito! O relacionamento entre tutor e pet também envolve quími">Cães e gatos demonstram afeto de formas diferentes, mas escolher ficar perto, dormir ao seu lado, procurar você nos mome...</td>
+                <td><a href="https://www.instagram.com/p/DWEfyifDvy4" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>87</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-23</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num engagement">3</td>
+                <td class="caption" title="Nem todo sintoma pode esperar.​ Algumas situações são consideradas emergência real, como aparecimento súbito e imprevisto de situações que necessitem da solução imediata e, nesses casos, os planos da ">Nem todo sintoma pode esperar.​ Algumas situações são consideradas emergência real, como aparecimento súbito e imprevist...</td>
+                <td><a href="https://www.instagram.com/p/DWOzKKuCWPs" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>88</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-08</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num engagement">3</td>
+                <td class="caption" title="Cuidar é um gesto diário que vai além do óbvio.​ É atenção, responsabilidade e presença, seja no trabalho, na vida e em casa… inclusive com quem não fala, mas sente tudo.​  Hoje celebramos as mulheres">Cuidar é um gesto diário que vai além do óbvio.​ É atenção, responsabilidade e presença, seja no trabalho, na vida e em ...</td>
+                <td><a href="https://www.instagram.com/p/DVn9WaNiPAK" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>89</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-18</td>
+                <td class="num">2</td>
+                <td class="num">0</td>
+                <td class="num engagement">2</td>
+                <td class="caption" title="Amar um pet é estar presente nos momentos bons e preparado para os imprevistos.​  Doenças, emergências e dúvidas não avisam quando vão chegar.​ Por isso, cuidado de verdade envolve planejamento, infor">Amar um pet é estar presente nos momentos bons e preparado para os imprevistos.​  Doenças, emergências e dúvidas não avi...</td>
+                <td><a href="https://www.instagram.com/p/DWB7ADgjetO" target="_blank">Ver</a></td>
+            </tr>
+            <tr>
+                <td>90</td>
+                <td><a href="https://www.instagram.com/auhappypet/" target="_blank">@auhappypet</a></td>
+                <td class="company-cell">auhappy</td>
+                <td>2026-03-12</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num engagement">0</td>
+                <td class="caption" title="A saúde intestinal do seu pet começa no prato e muita gente não percebe isso.​  Alguns alimentos ajudam a manter a flora intestinal equilibrada, fortalecendo a imunidade e a digestão.​ Outros, quando ">A saúde intestinal do seu pet começa no prato e muita gente não percebe isso.​  Alguns alimentos ajudam a manter a flora...</td>
+                <td><a href="https://www.instagram.com/p/DVyeRjfjB-h" target="_blank">Ver</a></td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Pipeline Report &bull; 90 posts de 9 perfis &bull; 25/03/2026 09:02
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow').textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    document.querySelectorAll('#postsTable tbody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        row.style.display = ((!search || text.includes(search)) && (!profile || profileCell.includes(profile))) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
