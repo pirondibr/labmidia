@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Top 10 posts virais &mdash; Hamburgueria POA &bull; Gerado em 25/03/2026 08:08</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">927</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">40</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">967</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">9,268</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">396</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">142</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">11</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">153</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,420</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">110</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">142</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">148</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,424</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">60</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">100</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">9</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">109</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,000</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">94</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">9</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">91</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">95</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">823</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">35</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#6</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">72</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">8</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">80</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">724</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">79</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#7</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">22</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">24</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">216</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">20</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#8</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">7</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">0</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">7</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">68</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">0</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@o_xiss">@o_xiss</option><option value="@naskburguer">@naskburguer</option><option value="@luchoburger.poa">@luchoburger.poa</option><option value="@markhamburgueria">@markhamburgueria</option><option value="@grioburger">@grioburger</option><option value="@labarra_poa">@labarra_poa</option><option value="@portoburgeroficial">@portoburgeroficial</option><option value="@filhosdoreinohamburgueria">@filhosdoreinohamburgueria</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-15</td>
+            <td class="num">7,301</td>
+            <td class="num">222</td>
+            <td class="num engagement">7,523</td>
+            <td class="caption" title="Há dez anos escuto nossos assistidos pedirem xis nas nossas ações!  Bora de @o_xiss  Valeu @carlatellini por aceitar o desafio!  Esse vídeo em agradecimento especial a ti! Muito obrigado minha irmã! B">Há dez anos escuto nossos assistidos pedirem xis nas nossas ações!  Bora de @o_xiss  Valeu @carlatellini por aceitar o d...</td>
+            <td><a href="https://www.instagram.com/p/DV3xMC6Dfp9" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-16</td>
+            <td class="num">1,040</td>
+            <td class="num">77</td>
+            <td class="num engagement">1,117</td>
+            <td class="caption" title="No último sábado, a chapa do @o_xiss trabalhou por um motivo diferente.  Foram 300 Xiss Saladas preparados nas cozinhas das operações do BarraShopping, do Bom Fim e do Moinhos de Vento e entregues, ju">No último sábado, a chapa do @o_xiss trabalhou por um motivo diferente.  Foram 300 Xiss Saladas preparados nas cozinhas ...</td>
+            <td><a href="https://www.instagram.com/p/DV9caK9xIop" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2024-11-14</td>
+            <td class="num">813</td>
+            <td class="num">23</td>
+            <td class="num engagement">836</td>
+            <td class="caption" title="Foi épico! 🎉 Nossa festa de 10 anos foi incrível – e tudo graças a vocês! Cada sorriso, cada abraço e cada momento compartilhado tornaram essa celebração única e encheram nosso coração de gratidão. De">Foi épico! 🎉 Nossa festa de 10 anos foi incrível – e tudo graças a vocês! Cada sorriso, cada abraço e cada momento compa...</td>
+            <td><a href="https://www.instagram.com/p/DCXbhVqsHuB" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2025-04-25</td>
+            <td class="num">753</td>
+            <td class="num">26</td>
+            <td class="num engagement">779</td>
+            <td class="caption" title="Sim, você leu certo! Nosso clássico na versão Croissant com blend Wagyu! 🥐  A partir de hoje, 25 de abril, até o sold out. 🔥  Somente no delivery.  Corre que essa edição especial é limitadíssima! 🥵">Sim, você leu certo! Nosso clássico na versão Croissant com blend Wagyu! 🥐  A partir de hoje, 25 de abril, até o sold ou...</td>
+            <td><a href="https://www.instagram.com/p/DI4VpDnPB8y" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-10</td>
+            <td class="num">478</td>
+            <td class="num">24</td>
+            <td class="num engagement">502</td>
+            <td class="caption" title="Tu não imagina o risco que pode ter numa maionese feita com ovo cru 😳  Aqui na Nask a gente faz diferente: maionese feita todo dia, com ovo em pó, pra ficar sempre fresca, segura e MUITO gostosa 😛💛  A">Tu não imagina o risco que pode ter numa maionese feita com ovo cru 😳  Aqui na Nask a gente faz diferente: maionese feit...</td>
+            <td><a href="https://www.instagram.com/p/DUmDUIwgYFN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-11</td>
+            <td class="num">342</td>
+            <td class="num">48</td>
+            <td class="num engagement">390</td>
+            <td class="caption" title="Bora realizar mais um sonho?! Siiiiim!!!! 🍔 Nesse sábado não serviremos apenas um xis , mas sim Ô XISS!!!!! O mais saboroso e premiado xis de Porto Alegre para nossos irmãos no Viaduto numa ação em pa">Bora realizar mais um sonho?! Siiiiim!!!! 🍔 Nesse sábado não serviremos apenas um xis , mas sim Ô XISS!!!!! O mais sabor...</td>
+            <td><a href="https://www.instagram.com/p/DVvX5BZjRzA" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-09</td>
+            <td class="num">333</td>
+            <td class="num">33</td>
+            <td class="num engagement">366</td>
+            <td class="caption" title="Algumas decisões não nascem de planilhas. Nascem de silêncio, de conversas difíceis e de muita escuta interior….  Esse último ano nos ensinou que crescimento nem sempre é rápido, mas quase sempre é tr">Algumas decisões não nascem de planilhas. Nascem de silêncio, de conversas difíceis e de muita escuta interior….  Esse ú...</td>
+            <td><a href="https://www.instagram.com/p/DUjf-PvDeUa" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2026-02-11</td>
+            <td class="num">354</td>
+            <td class="num">11</td>
+            <td class="num engagement">365</td>
+            <td class="caption" title="🍔🔥 Sabe aquele lugar que você vai uma vez e já quer voltar?  O @labarra_poa entrega sabor de verdade, clima descontraído e aquele combo perfeito pra reunir a galera 🤎  Comida caprichada, ambiente mass">🍔🔥 Sabe aquele lugar que você vai uma vez e já quer voltar?  O @labarra_poa entrega sabor de verdade, clima descontraído...</td>
+            <td><a href="https://www.instagram.com/p/DUoLoQVira2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2024-12-18</td>
+            <td class="num">256</td>
+            <td class="num">16</td>
+            <td class="num engagement">272</td>
+            <td class="caption" title="Que tal ser dono de uma marca moderna, jovem e esfomeada?  Ô Xiss é uma marca do Grupo Press, o maior e mais premiado grupo gastronômico do RS.  Seja franqueado de uma marca que não para de crescer e ">Que tal ser dono de uma marca moderna, jovem e esfomeada?  Ô Xiss é uma marca do Grupo Press, o maior e mais premiado gr...</td>
+            <td><a href="https://www.instagram.com/p/DDsdYS9v67h" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2025-05-13</td>
+            <td class="num">221</td>
+            <td class="num">13</td>
+            <td class="num engagement">234</td>
+            <td class="caption" title="Você já ouviu falar do Efeito Maillard? 🤔   É a reação que dá aquele sabor único e aquela crostinha irresistível pro nosso smash. Passa pro lado pra entender melhor!  Quando dizemos que o Lucho é smas">Você já ouviu falar do Efeito Maillard? 🤔   É a reação que dá aquele sabor único e aquela crostinha irresistível pro nos...</td>
+            <td><a href="https://www.instagram.com/p/DJm6spHPI8r" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-11-26</td>
+            <td class="num">168</td>
+            <td class="num">14</td>
+            <td class="num engagement">182</td>
+            <td class="caption" title="E foooooi bomm, nossa primeira edição do projeto Buena Onda, onde convidamos um dj parceiro pra um sunset na nossa calçada, obrigado por tudo queridos!❤️🫂🌞 (mês que vem tem mais👀)">E foooooi bomm, nossa primeira edição do projeto Buena Onda, onde convidamos um dj parceiro pra um sunset na nossa calça...</td>
+            <td><a href="https://www.instagram.com/p/DRiC_nvkhmn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-19</td>
+            <td class="num">168</td>
+            <td class="num">8</td>
+            <td class="num engagement">176</td>
+            <td class="caption" title="O que nós fazemos na nossa hamburgueria quando o movimento tá fraco 👀  Nem todo dia recebemos muitos pedidos e tá tudo bem. Nesses dias a gente aproveita pra fazer tudo que mantém a experiência da Nas">O que nós fazemos na nossa hamburgueria quando o movimento tá fraco 👀  Nem todo dia recebemos muitos pedidos e tá tudo b...</td>
+            <td><a href="https://www.instagram.com/p/DU9QXHwjQc2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-14</td>
+            <td class="num">170</td>
+            <td class="num">5</td>
+            <td class="num engagement">175</td>
+            <td class="caption" title="Sabadou no Griô!   Hoje tem pagode a partir das 21h!  #griôburger #cidadebaixa #portoalegre">Sabadou no Griô!   Hoje tem pagode a partir das 21h!  #griôburger #cidadebaixa #portoalegre</td>
+            <td><a href="https://www.instagram.com/p/DV4b_OED6_P" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-11</td>
+            <td class="num">151</td>
+            <td class="num">3</td>
+            <td class="num engagement">154</td>
+            <td class="caption" title="No dia 19 de março, às 19h30, o Griô recebe a Trip da Preta, uma noite especial dedicada à cultura, ao empreendedorismo negro e à celebração das mulheres.  Teremos exposição de ideias e produtos de af">No dia 19 de março, às 19h30, o Griô recebe a Trip da Preta, uma noite especial dedicada à cultura, ao empreendedorismo ...</td>
+            <td><a href="https://www.instagram.com/p/DVugOVXDaKr" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-20</td>
+            <td class="num">139</td>
+            <td class="num">6</td>
+            <td class="num engagement">145</td>
+            <td class="caption" title="Exposição de Afro-empreendedoras e muito samba!">Exposição de Afro-empreendedoras e muito samba!</td>
+            <td><a href="https://www.instagram.com/p/DWFilYwDaXT" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-03-14</td>
+            <td class="num">128</td>
+            <td class="num">14</td>
+            <td class="num engagement">142</td>
+            <td class="caption" title="1… 2… 3 carnes 😮‍💨  Sim, TRÊS carnes de 100g no mesmo burguer. Esse é o novo lançamento da Nask 🍔  🔥 Disponível por tempo limitado 📲 Pede o teu agora  Marca aqui quem conseguiria comer esse sozinho 👇">1… 2… 3 carnes 😮‍💨  Sim, TRÊS carnes de 100g no mesmo burguer. Esse é o novo lançamento da Nask 🍔  🔥 Disponível por temp...</td>
+            <td><a href="https://www.instagram.com/p/DV4ekFGjwHD" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-23</td>
+            <td class="num">122</td>
+            <td class="num">10</td>
+            <td class="num engagement">132</td>
+            <td class="caption" title="Não foi um encontro qualquer,Falamos de espaço,pertencimento, o espaço que nos é negado e o que reivindicamos com coragem. Falamos de racismo — estrutural, cotidiano, silencioso e violento. E falamos ">Não foi um encontro qualquer,Falamos de espaço,pertencimento, o espaço que nos é negado e o que reivindicamos com corage...</td>
+            <td><a href="https://www.instagram.com/p/DWG-gKSDjeJ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-11-16</td>
+            <td class="num">111</td>
+            <td class="num">16</td>
+            <td class="num engagement">127</td>
+            <td class="caption" title="La Barra em peso ❤️Una Buena Onda!  Aniversariante feliz, aquela vibe que só a gente tem. 💛🎶🍔🌟🍻">La Barra em peso ❤️Una Buena Onda!  Aniversariante feliz, aquela vibe que só a gente tem. 💛🎶🍔🌟🍻</td>
+            <td><a href="https://www.instagram.com/p/DRISoBqEorI" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-20</td>
+            <td class="num">104</td>
+            <td class="num">6</td>
+            <td class="num engagement">110</td>
+            <td class="caption" title="Tu sabia que pode pedir o teu burger do @luchoburger.poa e aproveitar aqui? 🍔🌻  O Lucho é nosso vizinho e parceiro na Padre Chagas.  Aqui, cada um pode ir no que tá com vontade - tem quem escolha uma ">Tu sabia que pode pedir o teu burger do @luchoburger.poa e aproveitar aqui? 🍔🌻  O Lucho é nosso vizinho e parceiro na Pa...</td>
+            <td><a href="https://www.instagram.com/p/DWG_0Cpjdpu" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-20</td>
+            <td class="num">96</td>
+            <td class="num">12</td>
+            <td class="num engagement">108</td>
+            <td class="caption" title="O brasileiro não tem um dia de paz 🇧🇷⚽️ É ansiedade pré-Copa e fome de Xiss ao mesmo tempo.  A gente te entende, @jeremiaswernek! Mas caaalma o coração, falta muito pouco pra gente ser feliz.   Por aq">O brasileiro não tem um dia de paz 🇧🇷⚽️ É ansiedade pré-Copa e fome de Xiss ao mesmo tempo.  A gente te entende, @jeremi...</td>
+            <td><a href="https://www.instagram.com/p/DWHtu5LCbln" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-15</td>
+            <td class="num">98</td>
+            <td class="num">7</td>
+            <td class="num engagement">105</td>
+            <td class="caption" title="#griôburger #cidadebaixa #portoalegre">#griôburger #cidadebaixa #portoalegre</td>
+            <td><a href="https://www.instagram.com/p/DV6dIZ9inlt" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-02-26</td>
+            <td class="num">93</td>
+            <td class="num">9</td>
+            <td class="num engagement">102</td>
+            <td class="caption" title="Se até a “concorrência” (brincadeira, são nossos parceiros!) prova e aprova a Mark, você não pode deixar de provar! 🤣❤️   Foi um prazer dividir essa experiência com vocês, pessoal! @legrandburger @ovo">Se até a “concorrência” (brincadeira, são nossos parceiros!) prova e aprova a Mark, você não pode deixar de provar! 🤣❤️ ...</td>
+            <td><a href="https://www.instagram.com/p/DVOmmZfjSSP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-16</td>
+            <td class="num">92</td>
+            <td class="num">6</td>
+            <td class="num engagement">98</td>
+            <td class="caption" title="Algum lugar do Moinhos de Vento tem Lucho esperando por você. 🏴  Espalhamos alguns vales da Lucho por aí. Quem achar primeiro, leva. 👀  Achou? Passa na loja pra trocar! 💛  🎥 @cut.petersen">Algum lugar do Moinhos de Vento tem Lucho esperando por você. 🏴  Espalhamos alguns vales da Lucho por aí. Quem achar pri...</td>
+            <td><a href="https://www.instagram.com/p/DV1q0_LDmlC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-06</td>
+            <td class="num">81</td>
+            <td class="num">12</td>
+            <td class="num engagement">93</td>
+            <td class="caption" title="E aí, vira ou não vira? 🍻  O resultado a gente só vai saber no domingo. E quem quiser curtir o clima do grenal pode chegar no Ô Xiss do Bom Fim ou da Padre Chagas e curtir uma dose dupla de chope, que">E aí, vira ou não vira? 🍻  O resultado a gente só vai saber no domingo. E quem quiser curtir o clima do grenal pode cheg...</td>
+            <td><a href="https://www.instagram.com/p/DVjrnhjiVu5" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-23</td>
+            <td class="num">88</td>
+            <td class="num">4</td>
+            <td class="num engagement">92</td>
+            <td class="caption" title="No dia 26/03, o Lucho se junta ao @mercadobrasco pra mais uma edição do Quintas na Padre: um happy hour que começa às 18h e vai até às 20h, com DJ set de @gilzerax e @rafaelschutz.  Burger, cerveja ge">No dia 26/03, o Lucho se junta ao @mercadobrasco pra mais uma edição do Quintas na Padre: um happy hour que começa às 18...</td>
+            <td><a href="https://www.instagram.com/p/DWPc94bEq8v" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-06</td>
+            <td class="num">73</td>
+            <td class="num">5</td>
+            <td class="num engagement">78</td>
+            <td class="caption" title="Cansamos de ver empreendedores presos a dezenas de ferramentas caras e planilhas infinitas que não conversam entre si. O @maarkoficial , da @markhamburgueria , vivia esse caos até descobrir que poderi">Cansamos de ver empreendedores presos a dezenas de ferramentas caras e planilhas infinitas que não conversam entre si. O...</td>
+            <td><a href="https://www.instagram.com/p/DVjts3XERVu" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-03-25</td>
+            <td class="num">67</td>
+            <td class="num">8</td>
+            <td class="num engagement">75</td>
+            <td class="caption" title="O Cheddy tava com a gente quando era só a gente, na cozinha de casa, no meio da pandemia, no tédio, “no hobby em fazer hambúrguer”. A gente sempre escolhia fazer ele 🗣️  Ele foi o nosso primeiro, é o ">O Cheddy tava com a gente quando era só a gente, na cozinha de casa, no meio da pandemia, no tédio, “no hobby em fazer h...</td>
+            <td><a href="https://www.instagram.com/p/DWSjSoXDtZO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-02-27</td>
+            <td class="num">70</td>
+            <td class="num">4</td>
+            <td class="num engagement">74</td>
+            <td class="caption" title="A Lucho agora tem delivery próprio 📢  E a melhor parte? O primeiro pedido tem R$25 OFF. Também lançamos um programa de fidelidade pra quem pedir direto com a gente, e ainda vem mais novidade por aí 💛 ">A Lucho agora tem delivery próprio 📢  E a melhor parte? O primeiro pedido tem R$25 OFF. Também lançamos um programa de f...</td>
+            <td><a href="https://www.instagram.com/p/DVRiLBfEknS" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-04</td>
+            <td class="num">63</td>
+            <td class="num">7</td>
+            <td class="num engagement">70</td>
+            <td class="caption" title="Isso pode né? 🤭">Isso pode né? 🤭</td>
+            <td><a href="https://www.instagram.com/p/DUWuFp0DeOm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-11-28</td>
+            <td class="num">64</td>
+            <td class="num">4</td>
+            <td class="num engagement">68</td>
+            <td class="caption" title="Vamo toma um negocinho? comer uma coisinha? sexta feira né, o mundo é feito de escolhas…😏">Vamo toma um negocinho? comer uma coisinha? sexta feira né, o mundo é feito de escolhas…😏</td>
+            <td><a href="https://www.instagram.com/p/DRnTbASks4n" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-08</td>
+            <td class="num">62</td>
+            <td class="num">0</td>
+            <td class="num engagement">62</td>
+            <td class="caption" title="Hoje celebramos a força, a história e a presença de cada mulher que passa pela nossa casa.  Cada sorriso, cada encontro, cada conversa em volta da mesa constrói a energia que faz do Griô um lugar de p">Hoje celebramos a força, a história e a presença de cada mulher que passa pela nossa casa.  Cada sorriso, cada encontro,...</td>
+            <td><a href="https://www.instagram.com/p/DVoeuZ3E4MS" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-21</td>
+            <td class="num">56</td>
+            <td class="num">5</td>
+            <td class="num engagement">61</td>
+            <td class="caption" title="O queridinho desde o primeiro dia 🏆   Nosso clássico: molho cheddar cremoso, cebola caramelizada, bacon crocante,  pão australiano, carne Angus 170g e maionese Nask. 😮‍💨  NÃO TEM ERRO.  É o nosso MAIS">O queridinho desde o primeiro dia 🏆   Nosso clássico: molho cheddar cremoso, cebola caramelizada, bacon crocante,  pão a...</td>
+            <td><a href="https://www.instagram.com/p/DVCQ_RMAcHe" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-12</td>
+            <td class="num">55</td>
+            <td class="num">6</td>
+            <td class="num engagement">61</td>
+            <td class="caption" title="Cada um com seus problemas 😄">Cada um com seus problemas 😄</td>
+            <td><a href="https://www.instagram.com/p/DUoy2kBDbMo" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-02-05</td>
+            <td class="num">54</td>
+            <td class="num">5</td>
+            <td class="num engagement">59</td>
+            <td class="caption" title="🍔✨ Hoje é dia de MONTE SEU BURGER na Porto!  Escolha o pão, a carne, os ingredientes e cria o burger do seu jeito — do jeitinho que você ama, e com o sabor da Porto Burger 😍  📍 Rua Anita Garibaldi 168">🍔✨ Hoje é dia de MONTE SEU BURGER na Porto!  Escolha o pão, a carne, os ingredientes e cria o burger do seu jeito — do j...</td>
+            <td><a href="https://www.instagram.com/p/DUYPnb_FGxJ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-23</td>
+            <td class="num">49</td>
+            <td class="num">4</td>
+            <td class="num engagement">53</td>
+            <td class="caption" title="Porto Alegre já começa a ganhar outro ritmo: gente chegando, ideias circulando e a cidade pulsando diferente. É semana de @southsummitbrazil, e o Grupo Press está por todos os lados fazendo parte dess">Porto Alegre já começa a ganhar outro ritmo: gente chegando, ideias circulando e a cidade pulsando diferente. É semana d...</td>
+            <td><a href="https://www.instagram.com/p/DWPWb2ujzS9" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-12</td>
+            <td class="num">42</td>
+            <td class="num">4</td>
+            <td class="num engagement">46</td>
+            <td class="caption" title="Sexta é dia de Happy Hour no Griô!  Quem comanda o som da noite é DJ Gê Powers, trazendo uma seleção de grooves, clássicos e batidas para começar a noite da Cidade Baixa no ritmo certo.  Burgers, drin">Sexta é dia de Happy Hour no Griô!  Quem comanda o som da noite é DJ Gê Powers, trazendo uma seleção de grooves, clássic...</td>
+            <td><a href="https://www.instagram.com/p/DVyo4q0FFuW" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-14</td>
+            <td class="num">42</td>
+            <td class="num">4</td>
+            <td class="num engagement">46</td>
+            <td class="caption" title="AND THE OSCAR GOES TO: Vai dar Brasilll! 🏆  #ÔXiss #Oscars #Cinema #WagnerMoura">AND THE OSCAR GOES TO: Vai dar Brasilll! 🏆  #ÔXiss #Oscars #Cinema #WagnerMoura</td>
+            <td><a href="https://www.instagram.com/p/DV4LcmCicFP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2026-01-31</td>
+            <td class="num">41</td>
+            <td class="num">0</td>
+            <td class="num engagement">41</td>
+            <td class="caption" title="Não é só um pedido. É o cuidado que a gente carrega. 💜🍔  “Sirvam uns aos outros mediante o amor” Gal. 5:13.">Não é só um pedido. É o cuidado que a gente carrega. 💜🍔  “Sirvam uns aos outros mediante o amor” Gal. 5:13.</td>
+            <td><a href="https://www.instagram.com/p/DUMESAGiZCM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-17</td>
+            <td class="num">39</td>
+            <td class="num">1</td>
+            <td class="num engagement">40</td>
+            <td class="caption" title="Isso é tudo que tu precisa pra hoje 🤭  Nosso Onion é a releitura de um dos burguers mais vendidos dos grandes fastfoods, só que do jeitinho Nask: artesanal, crocante e MUITO mais saboroso 🔥🍔">Isso é tudo que tu precisa pra hoje 🤭  Nosso Onion é a releitura de um dos burguers mais vendidos dos grandes fastfoods,...</td>
+            <td><a href="https://www.instagram.com/p/DU4ChUCEiyC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-13</td>
+            <td class="num">38</td>
+            <td class="num">1</td>
+            <td class="num engagement">39</td>
+            <td class="caption" title="Almoço de firma em plena sexta-feira tem que ser assim! 💼❎👩‍💻  Esse foi o nosso por aqui, agora quero saber do de vocês, conta aí qual vai ser?   #ÔXiss #Almoço #Firma">Almoço de firma em plena sexta-feira tem que ser assim! 💼❎👩‍💻  Esse foi o nosso por aqui, agora quero saber do de vocês,...</td>
+            <td><a href="https://www.instagram.com/p/DV0_l_oD3vn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td><a href="https://www.instagram.com/naskburguer/" target="_blank">@naskburguer</a></td>
+            <td>2026-02-24</td>
+            <td class="num">33</td>
+            <td class="num">4</td>
+            <td class="num engagement">37</td>
+            <td class="caption" title="Hoje o Gorgo é o Nask do Dia 🍔✨ Pão australiano, carne suculenta, molho gorgonzola cremoso, cebola caramelizada, rúcula fresquinha e maionese Nask… e ainda acompanha 4 queijinhos gouda pra se lambuzar">Hoje o Gorgo é o Nask do Dia 🍔✨ Pão australiano, carne suculenta, molho gorgonzola cremoso, cebola caramelizada, rúcula ...</td>
+            <td><a href="https://www.instagram.com/p/DVJ-Ix-kstw" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-19</td>
+            <td class="num">37</td>
+            <td class="num">0</td>
+            <td class="num engagement">37</td>
+            <td class="caption" title="Já sabe o que vai fazer da vida nessa sexta? Vem pra Porto! Vamos ter novamente o talentoso @musicopedrochaves pra embalar nossa noite! 📍Rua Anita Garibaldi 1681">Já sabe o que vai fazer da vida nessa sexta? Vem pra Porto! Vamos ter novamente o talentoso @musicopedrochaves pra embal...</td>
+            <td><a href="https://www.instagram.com/p/DWEgaPbEZK9" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-19</td>
+            <td class="num">36</td>
+            <td class="num">0</td>
+            <td class="num engagement">36</td>
+            <td class="caption" title="Happy hour na Lucho tem cerveja gelada e o melhor smash de POA. 🏴  Se a ideia é encerrar o dia direito, passa por aqui. 💛  📍 Rua Mostardeiro, 120  📍 Rua Padre Chagas, 263">Happy hour na Lucho tem cerveja gelada e o melhor smash de POA. 🏴  Se a ideia é encerrar o dia direito, passa por aqui. ...</td>
+            <td><a href="https://www.instagram.com/p/DWFHZKRCfdG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-18</td>
+            <td class="num">26</td>
+            <td class="num">0</td>
+            <td class="num engagement">26</td>
+            <td class="caption" title="Smash de frango não é algo comum de encontrar.  Na Lucho a gente fez acontecer. E o resultado é um burger crocante, suculento e único, que você só encontra aqui. 🏴  E pra melhorar: ele também entra no">Smash de frango não é algo comum de encontrar.  Na Lucho a gente fez acontecer. E o resultado é um burger crocante, sucu...</td>
+            <td><a href="https://www.instagram.com/p/DWB4GxtDkL7" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td><a href="https://www.instagram.com/o_xiss/" target="_blank">@o_xiss</a></td>
+            <td>2026-03-09</td>
+            <td class="num">23</td>
+            <td class="num">0</td>
+            <td class="num engagement">23</td>
+            <td class="caption" title="Só quem tem armazenamento cheio entende… mas né, a gente sempre dá um jeitinho quando vem Airdrop de comida bonita assim. 😎  #ÔXiss #Xis #Airdrop">Só quem tem armazenamento cheio entende… mas né, a gente sempre dá um jeitinho quando vem Airdrop de comida bonita assim...</td>
+            <td><a href="https://www.instagram.com/p/DVrOvKbD2Gp" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-14</td>
+            <td class="num">22</td>
+            <td class="num">0</td>
+            <td class="num engagement">22</td>
+            <td class="caption" title="Sextou 🍸🍹  #griôburger #cidadebaixa #portoalegre">Sextou 🍸🍹  #griôburger #cidadebaixa #portoalegre</td>
+            <td><a href="https://www.instagram.com/p/DV2GG1MDVJi" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-16</td>
+            <td class="num">21</td>
+            <td class="num">1</td>
+            <td class="num engagement">22</td>
+            <td class="caption" title="Se tu viu essa foto, já era a tua dieta! Corre nos story e marca quem comeria o Redomão rindo e ganhem um cupom de desconto!!">Se tu viu essa foto, já era a tua dieta! Corre nos story e marca quem comeria o Redomão rindo e ganhem um cupom de desco...</td>
+            <td><a href="https://www.instagram.com/p/DV8s0r-Eb_S" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-06</td>
+            <td class="num">20</td>
+            <td class="num">1</td>
+            <td class="num engagement">21</td>
+            <td class="caption" title="No pedido direto o preço é de loja. 🏴  Mais uma das vantagens de pedir pelo nosso delivery.  Que tal pedir por lá hoje? Link na bio! 🛵">No pedido direto o preço é de loja. 🏴  Mais uma das vantagens de pedir pelo nosso delivery.  Que tal pedir por lá hoje? ...</td>
+            <td><a href="https://www.instagram.com/p/DVjrOkIDid8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>49</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-19</td>
+            <td class="num">3</td>
+            <td class="num">16</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="Parceria nova chegando!   Ontem, fomos conferir nossas novas cervejas em parceria com a @cervejaalcapone que estarão disponíveis nas nossas unidades a partir de amanhã, sexta-feira!   SESSION IPA e Pi">Parceria nova chegando!   Ontem, fomos conferir nossas novas cervejas em parceria com a @cervejaalcapone que estarão dis...</td>
+            <td><a href="https://www.instagram.com/p/DWFK_iBAHrj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>50</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-20</td>
+            <td class="num">19</td>
+            <td class="num">0</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="Aqui na Porto é assim: 🍔Sabor de respeito! 🤌🏼Atendimento parceiro! 💫Aquela Vibe que faz tu querer voltar sempre  📍Rua Anita Garibaldi 1681">Aqui na Porto é assim: 🍔Sabor de respeito! 🤌🏼Atendimento parceiro! 💫Aquela Vibe que faz tu querer voltar sempre  📍Rua An...</td>
+            <td><a href="https://www.instagram.com/p/DWHYCZSkbyh" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>51</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-18</td>
+            <td class="num">9</td>
+            <td class="num">10</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="Papo reto por aqui! Estamos em dúvida em qua a melhor forma de te servir essa maravilha de XIS crocante e gostoso! Chega mais no story e conta como tu quer receber o teu xis na mesa!!  Ah no delivery ">Papo reto por aqui! Estamos em dúvida em qua a melhor forma de te servir essa maravilha de XIS crocante e gostoso! Chega...</td>
+            <td><a href="https://www.instagram.com/p/DWCDAcdkf13" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>52</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-17</td>
+            <td class="num">16</td>
+            <td class="num">2</td>
+            <td class="num engagement">18</td>
+            <td class="caption" title="🧉x 🍊O findi tá chegando e o nosso Bartender pediu para perguntar: tu quer promoção do drink de Erva Mate ou de Bergamota?  Corre lá no story e deixa teu voto, e já vai ganhar um cupom de desconto pra ">🧉x 🍊O findi tá chegando e o nosso Bartender pediu para perguntar: tu quer promoção do drink de Erva Mate ou de Bergamota...</td>
+            <td><a href="https://www.instagram.com/p/DV_NrZXkbE8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>53</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-13</td>
+            <td class="num">18</td>
+            <td class="num">0</td>
+            <td class="num engagement">18</td>
+            <td class="caption" title="Sextou, tchê! E o destino do vivente é um só: Porto Burger 🍔 🍻Rua Anita Garibaldi 1681">Sextou, tchê! E o destino do vivente é um só: Porto Burger 🍔 🍻Rua Anita Garibaldi 1681</td>
+            <td><a href="https://www.instagram.com/p/DV0uGKxEWl3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>54</td>
+            <td><a href="https://www.instagram.com/grioburger/" target="_blank">@grioburger</a></td>
+            <td>2026-03-24</td>
+            <td class="num">17</td>
+            <td class="num">0</td>
+            <td class="num engagement">17</td>
+            <td class="caption" title="Estamos aceitando currículos pelo whatsapp  51 9 9697 0777  #griôburger #cidadebaixa #portoalegre">Estamos aceitando currículos pelo whatsapp  51 9 9697 0777  #griôburger #cidadebaixa #portoalegre</td>
+            <td><a href="https://www.instagram.com/p/DWP5yqSDGh3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>55</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-21</td>
+            <td class="num">15</td>
+            <td class="num">2</td>
+            <td class="num engagement">17</td>
+            <td class="caption" title="Tanto faz o teu gosto! Tem algo no nosso cardápio que vai te fazer encher a pança e sair feliz?🙃">Tanto faz o teu gosto! Tem algo no nosso cardápio que vai te fazer encher a pança e sair feliz?🙃</td>
+            <td><a href="https://www.instagram.com/p/DWJ03njkTaZ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>56</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-22</td>
+            <td class="num">3</td>
+            <td class="num">13</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Além de cuidar da marca e das seis unidades, o Mark precisa dar uma paradinha e atender a menina do marketing. E aí, acham que é moleza? 🤣">Além de cuidar da marca e das seis unidades, o Mark precisa dar uma paradinha e atender a menina do marketing. E aí, ach...</td>
+            <td><a href="https://www.instagram.com/p/DWNC1uNAKmF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>57</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-12-08</td>
+            <td class="num">3</td>
+            <td class="num">12</td>
+            <td class="num engagement">15</td>
+            <td class="caption" title="Holaaa povo, chegou a hora da segunda edição do nosso Buena Onda💥 Será nesse próximo sábado, dia 13.12! Teremos djjjjj @yosoykinho quebrando tudo, choppinho Heineken trincando pra matar aquela sede es">Holaaa povo, chegou a hora da segunda edição do nosso Buena Onda💥 Será nesse próximo sábado, dia 13.12! Teremos djjjjj @...</td>
+            <td><a href="https://www.instagram.com/p/DSBMpURksUt" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>58</td>
+            <td><a href="https://www.instagram.com/luchoburger.poa/" target="_blank">@luchoburger.poa</a></td>
+            <td>2026-03-10</td>
+            <td class="num">14</td>
+            <td class="num">0</td>
+            <td class="num engagement">14</td>
+            <td class="caption" title="O Veggie da Lucho tem uma legião fiel de fãs 🏴  Quem não come carne já sabe bem do que a gente tá falando.  E pra quem ainda não provou, talvez esteja na hora de conhecer. 💛  Quem aqui também é fã del">O Veggie da Lucho tem uma legião fiel de fãs 🏴  Quem não come carne já sabe bem do que a gente tá falando.  E pra quem a...</td>
+            <td><a href="https://www.instagram.com/p/DVt9VwikVb2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>59</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-24</td>
+            <td class="num">14</td>
+            <td class="num">0</td>
+            <td class="num engagement">14</td>
+            <td class="caption" title="Escolhe um motivo, um motivo qualquer e agradece pelo teu dia! E não te esquece que estamos aqui te esperando pra almoçar! 📍Rua Anita Garibaldi 1681  #portoburger #portoalegre #hamburguerartesanal #ve">Escolhe um motivo, um motivo qualquer e agradece pelo teu dia! E não te esquece que estamos aqui te esperando pra almoça...</td>
+            <td><a href="https://www.instagram.com/p/DWRTwwDh39X" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>60</td>
+            <td><a href="https://www.instagram.com/portoburgeroficial/" target="_blank">@portoburgeroficial</a></td>
+            <td>2026-03-14</td>
+            <td class="num">13</td>
+            <td class="num">0</td>
+            <td class="num engagement">13</td>
+            <td class="caption" title="Tem algo mais raiz que um baita Xis com @frukiguarana?  📸 @comeguria">Tem algo mais raiz que um baita Xis com @frukiguarana?  📸 @comeguria</td>
+            <td><a href="https://www.instagram.com/p/DV3q_BbEfiz" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>61</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2026-03-06</td>
+            <td class="num">12</td>
+            <td class="num">0</td>
+            <td class="num engagement">12</td>
+            <td class="caption" title="Tá com fome? Então já sabe… hambúrguer do La Barra resolve. 🍔🔥">Tá com fome? Então já sabe… hambúrguer do La Barra resolve. 🍔🔥</td>
+            <td><a href="https://www.instagram.com/p/DVjvZHKErUU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>62</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-12-18</td>
+            <td class="num">3</td>
+            <td class="num">9</td>
+            <td class="num engagement">12</td>
+            <td class="caption" title="Segunda edição de Buena Onda que rolou nesse sábado passado ❤️ Gracias a todos que foram, ao nosso djjjj @yosoykinho que fez a segunda participação no projeto, à @heinekenbr e @suspeitovinho pelo apoi">Segunda edição de Buena Onda que rolou nesse sábado passado ❤️ Gracias a todos que foram, ao nosso djjjj @yosoykinho que...</td>
+            <td><a href="https://www.instagram.com/p/DSa_lgKEiMh" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>63</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-09</td>
+            <td class="num">3</td>
+            <td class="num">9</td>
+            <td class="num engagement">12</td>
+            <td class="caption" title="Saint Patrick Day na área!   Rodando nosso burguer do chefe, esse mês nosso sabor novo será temático do Saint Patrick Day. Valendo a partir de hoje nas nossas unidades.   E como disse o chefe: se liga">Saint Patrick Day na área!   Rodando nosso burguer do chefe, esse mês nosso sabor novo será temático do Saint Patrick Da...</td>
+            <td><a href="https://www.instagram.com/p/DVrR4OvALzj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>64</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-12-06</td>
+            <td class="num">3</td>
+            <td class="num">8</td>
+            <td class="num engagement">11</td>
+            <td class="caption" title="Milanesa al pan, suculenta e imperdível. Corre pro La Barra e garante a tua! 💛🔥">Milanesa al pan, suculenta e imperdível. Corre pro La Barra e garante a tua! 💛🔥</td>
+            <td><a href="https://www.instagram.com/p/DR7tie2khcJ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>65</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-08</td>
+            <td class="num">3</td>
+            <td class="num">7</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="Divos e divas!  O Mark está passando para deixar um aviso para vocês! Estamos com essa novidade para o Saint Patrick Days que já estará disponível a partir dessa segunda.   E aí, vocês curtiram a novi">Divos e divas!  O Mark está passando para deixar um aviso para vocês! Estamos com essa novidade para o Saint Patrick Day...</td>
+            <td><a href="https://www.instagram.com/p/DVoVWaUDf6u" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>66</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-05</td>
+            <td class="num">3</td>
+            <td class="num">7</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="Você sabia que para nosso hambúrguer chegar em ti existe todo um processo estratégico por trás?   Hoje foi dia de reunião com nosso time de gerentes para  dialogar, alinhar e escutar! Melhorar nossas ">Você sabia que para nosso hambúrguer chegar em ti existe todo um processo estratégico por trás?   Hoje foi dia de reuniã...</td>
+            <td><a href="https://www.instagram.com/p/DVhSWH1AChY" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>67</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2026-03-03</td>
+            <td class="num">3</td>
+            <td class="num">5</td>
+            <td class="num engagement">8</td>
+            <td class="caption" title="La Barra  é assim: chegou, mordeu, se apaixonou.  Bora deixar o dia mais gostoso? 🍔🍻">La Barra  é assim: chegou, mordeu, se apaixonou.  Bora deixar o dia mais gostoso? 🍔🍻</td>
+            <td><a href="https://www.instagram.com/p/DVcDh3rkoqL" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>68</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-24</td>
+            <td class="num">3</td>
+            <td class="num">4</td>
+            <td class="num engagement">7</td>
+            <td class="caption" title="Sem post bonito hoje porque nosso hambúrguer basta! 🤣 🍔">Sem post bonito hoje porque nosso hambúrguer basta! 🤣 🍔</td>
+            <td><a href="https://www.instagram.com/p/DWSLJjTALpX" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>69</td>
+            <td><a href="https://www.instagram.com/markhamburgueria/" target="_blank">@markhamburgueria</a></td>
+            <td>2026-03-17</td>
+            <td class="num">3</td>
+            <td class="num">1</td>
+            <td class="num engagement">4</td>
+            <td class="caption" title="Quem aí já conhecia nossos Panchos?  Muito mais que hambúrguer, também servimos em nossas unidades quatro sabores de Pancho! Saborosos, caprichados e suculentos, tal qual os hambúrgueres.   Vem provar">Quem aí já conhecia nossos Panchos?  Muito mais que hambúrguer, também servimos em nossas unidades quatro sabores de Pan...</td>
+            <td><a href="https://www.instagram.com/p/DWAO8EwDTjC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>70</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2026-02-02</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Serafim: Pão pretzel (fermentação natural), burguer angus 180g, fior di latte Scar (mozzarella de fermentação lenta), geleia de pimenta com morango, rúcula e maionese da casa.">Serafim: Pão pretzel (fermentação natural), burguer angus 180g, fior di latte Scar (mozzarella de fermentação lenta), ge...</td>
+            <td><a href="https://www.instagram.com/p/DURRPl7CXaP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>71</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2026-01-21</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Sião.  Pão brioche de fermentação natural.  Bacon em fatias. Burger Angus 180g. Fior di Latte Scar (mozzarella de fermentação lenta). Cebola e tomate chapeados. Azeite de Oliva com Pimenta Jalapeño da">Sião.  Pão brioche de fermentação natural.  Bacon em fatias. Burger Angus 180g. Fior di Latte Scar (mozzarella de fermen...</td>
+            <td><a href="https://www.instagram.com/p/DTyXs9miUTp" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>72</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2026-01-06</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Ontem iniciamos oficialmente o nosso ano. Depois de tirarmos uns dias para descansarmos, trabalharmos para novas ideias e, o mais importante, entender o que Deus tinha para nós neste novo ano.   Foi u">Ontem iniciamos oficialmente o nosso ano. Depois de tirarmos uns dias para descansarmos, trabalharmos para novas ideias ...</td>
+            <td><a href="https://www.instagram.com/p/DTL0qiTicBL" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>73</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-31</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Brindar é mais do que celebrar, é reconhecer que chegamos até aqui. E quando brindamos com hambúrguer é melhor ainda ✨  Neste novo ano, brindamos às mesas que nos reuniram, aos dias que nos ensinaram ">Brindar é mais do que celebrar, é reconhecer que chegamos até aqui. E quando brindamos com hambúrguer é melhor ainda ✨  ...</td>
+            <td><a href="https://www.instagram.com/p/DS7cH3fjd0I" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>74</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-29</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="A Filhos do Reino nasceu assim: pequena, simples, mas cheia de significado. Seguiremos construindo esse sonho todos os dias por pessoas que acreditam que comida também pode ser gesto, cuidado e comunh">A Filhos do Reino nasceu assim: pequena, simples, mas cheia de significado. Seguiremos construindo esse sonho todos os d...</td>
+            <td><a href="https://www.instagram.com/p/DS3GAgAjY8e" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>75</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-27</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Esse carrossel é feito de pequenos sinais que dizem muito. Cada pedido entregue, cada mensagem recebida, cada retorno sincero foi construindo algo maior do que a gente imaginava.  Esses registros repr">Esse carrossel é feito de pequenos sinais que dizem muito. Cada pedido entregue, cada mensagem recebida, cada retorno si...</td>
+            <td><a href="https://www.instagram.com/p/DSxWpuBjf2D" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>76</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-25</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Esse ano não foi sobre apenas o que está na mesa, mas tudo que veio antes dela. Sobre decisões feitas em oração, sonhos alinhados com o céu e mãos que escolheram servir. Cada detalhe carrega memória, ">Esse ano não foi sobre apenas o que está na mesa, mas tudo que veio antes dela. Sobre decisões feitas em oração, sonhos ...</td>
+            <td><a href="https://www.instagram.com/p/DSr4gqLjXT5" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>77</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-23</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Existe um momento, quase silencioso, que acontece antes mesmo da primeira mordida.  A campainha toca, a sacola chega nas suas mãos e algo dentro de você desperta. O cheiro atravessa a casa, quente, ma">Existe um momento, quase silencioso, que acontece antes mesmo da primeira mordida.  A campainha toca, a sacola chega nas...</td>
+            <td><a href="https://www.instagram.com/p/DSnvArADWYN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>78</td>
+            <td><a href="https://www.instagram.com/filhosdoreinohamburgueria/" target="_blank">@filhosdoreinohamburgueria</a></td>
+            <td>2025-12-21</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Não dá para comer só um pedaço. E não é gula, é revelação.  Porque quando algo carrega propósito, você sente. O primeiro pedaço chega quente, crocante, cheio de sabor… e antes mesmo de terminar, o cor">Não dá para comer só um pedaço. E não é gula, é revelação.  Porque quando algo carrega propósito, você sente. O primeiro...</td>
+            <td><a href="https://www.instagram.com/p/DSijF_UDXgu" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>79</td>
+            <td><a href="https://www.instagram.com/labarra_poa/" target="_blank">@labarra_poa</a></td>
+            <td>2025-12-02</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Queijo derretendo, escorrendo, irresistível… daquele jeito que só o La Barra sabe fazer. Suculência, intensidade e aquele hambúrguer que faz a gente esquecer o mundo por alguns minutos. Vem provar ess">Queijo derretendo, escorrendo, irresistível… daquele jeito que só o La Barra sabe fazer. Suculência, intensidade e aquel...</td>
+            <td><a href="https://www.instagram.com/p/DRx3q7-gdtV" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 79 posts de 8 perfis &bull; 25/03/2026 08:08
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
