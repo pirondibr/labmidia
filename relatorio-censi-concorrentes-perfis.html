@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Competitor Ranking - Torneiras & Metais</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0c10;--surface:#15151f;--surface2:#1c1c2e;--border:#282842;
+  --text:#e8e8f0;--muted:#8888a4;--accent:#833AB4;--accent2:#C13584;
+  --accent3:#E1306C;--green:#34d399;--red:#f87171;--gold:#facc15;--silver:#94a3b8;--bronze:#d97706;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+
+.header{
+  background:linear-gradient(135deg,#833AB4 0%,#C13584 50%,#E1306C 100%);
+  padding:52px 24px;text-align:center;position:relative;overflow:hidden;
+}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0V0h40v14H20v2h20v2H20v2.5z'/%3E%3C/g%3E%3C/svg%3E")}
+.header h1{font-size:2.5rem;font-weight:800;letter-spacing:-1px;position:relative}
+.header p{opacity:.85;margin-top:8px;font-size:1.05rem;position:relative}
+.header .badge{display:inline-block;margin-top:14px;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);padding:6px 18px;border-radius:20px;font-size:.85rem;font-weight:600;position:relative}
+
+.container{max-width:1300px;margin:0 auto;padding:36px 20px}
+
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;position:sticky;top:0;z-index:10;background:var(--bg);padding:12px 0;border-bottom:1px solid var(--border)}
+.nav a{
+  padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;
+  color:var(--muted);text-decoration:none;background:var(--surface);border:1px solid var(--border);
+  transition:all .2s;white-space:nowrap;
+}
+.nav a:hover,.nav a.active{color:#fff;background:var(--accent);border-color:var(--accent)}
+
+.section{margin-bottom:48px;scroll-margin-top:70px}
+.section-title{font-size:1.4rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.section-sub{color:var(--muted);font-size:.88rem;margin-bottom:20px}
+
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead th{
+  background:linear-gradient(135deg,#833AB4,#C13584);color:#fff;
+  padding:13px 16px;font-size:.78rem;text-transform:uppercase;letter-spacing:.7px;font-weight:600;
+  text-align:right;position:sticky;top:0;
+}
+thead th:first-child{text-align:center;width:50px}
+thead th:nth-child(2){text-align:left}
+tbody td{padding:11px 16px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums;font-size:.92rem}
+tbody td:first-child{text-align:center;font-weight:700;font-size:1rem}
+tbody td:nth-child(2){text-align:left;font-weight:600}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody tr:nth-child(1) td:first-child{color:var(--gold)}
+tbody tr:nth-child(2) td:first-child{color:var(--silver)}
+tbody tr:nth-child(3) td:first-child{color:var(--bronze)}
+
+.pos{color:var(--green);font-weight:600}
+.neg{color:var(--red);font-weight:600}
+.na{color:var(--muted);font-style:italic}
+
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px}
+.chart-wrap h3{margin-bottom:14px;font-size:1rem;color:var(--muted)}
+.chart-box{position:relative}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+.footer{text-align:center;padding:32px 20px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:700px){.header h1{font-size:1.6rem}table{min-width:500px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Instagram Competitor Rankings</h1>
+  <p>SocialBlade Data &mdash; Torneiras & Metais &mdash; 7 Accounts Analyzed</p>
+  <div class="badge">Generated March 26, 2026</div>
+</div>
+
+<div class="container">
+
+<nav class="nav">
+  <a href="#followers">Followers</a>
+  <a href="#growth">Growth %</a>
+  <a href="#netgain">Net Gained</a>
+  <a href="#avgmonth">Avg Monthly</a>
+  <a href="#lastmonth">Last Month</a>
+  <a href="#last3">Last 3 Months</a>
+  <a href="#charts">Charts</a>
+  <a href="#monthly">Monthly Data</a>
+</nav>
+
+<div id="followers" class="section">
+  <h2 class="section-title">&#127942; Ranking by Total Followers</h2>
+  <p class="section-sub">Current follower count, ranked highest to lowest</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Followers</th><th>vs #1</th></tr></thead>
+    <tbody id="tblFollowers"></tbody>
+  </table></div>
+</div>
+
+<div id="growth" class="section">
+  <h2 class="section-title">&#128200; Ranking by 12-Month Growth Rate</h2>
+  <p class="section-sub">Percentage growth over the last 12 months</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Growth %</th><th>Followers</th><th>Start</th></tr></thead>
+    <tbody id="tblGrowth"></tbody>
+  </table></div>
+</div>
+
+<div id="netgain" class="section">
+  <h2 class="section-title">&#128170; Ranking by Net Followers Gained (12mo)</h2>
+  <p class="section-sub">Absolute number of new followers added in 12 months</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Net Gained</th><th>Growth %</th><th>Current</th></tr></thead>
+    <tbody id="tblNet"></tbody>
+  </table></div>
+</div>
+
+<div id="avgmonth" class="section">
+  <h2 class="section-title">&#128197; Ranking by Average Monthly Gain</h2>
+  <p class="section-sub">Average new followers per month over the tracking period</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Avg/Month</th><th>Current</th><th>Growth %</th></tr></thead>
+    <tbody id="tblAvg"></tbody>
+  </table></div>
+</div>
+
+<div id="lastmonth" class="section">
+  <h2 class="section-title">&#9889; Ranking by Last Month Change</h2>
+  <p class="section-sub">Followers gained or lost in the most recent month (Feb 26 &rarr; Mar 26)</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Last Month</th><th>Current</th></tr></thead>
+    <tbody id="tblLast"></tbody>
+  </table></div>
+</div>
+
+<div id="last3" class="section">
+  <h2 class="section-title">&#128293; Ranking by Last 3 Months Gain</h2>
+  <p class="section-sub">Total followers gained in the last 3 months</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Last 3 Months</th><th>Current</th><th>Growth %</th></tr></thead>
+    <tbody id="tblLast3"></tbody>
+  </table></div>
+</div>
+
+<div id="charts" class="section">
+  <h2 class="section-title">&#128202; Visual Comparisons</h2>
+  <p class="section-sub">Interactive charts for all accounts</p>
+  <div class="chart-wrap">
+    <h3>Follower Growth Over Time</h3>
+    <div class="chart-box" style="height:420px"><canvas id="lineChart"></canvas></div>
+  </div>
+  <div class="grid2">
+    <div class="chart-wrap">
+      <h3>Current Followers (all accounts)</h3>
+      <div class="chart-box" style="height:420px"><canvas id="barFollowers"></canvas></div>
+    </div>
+    <div class="chart-wrap">
+      <h3>12-Month Growth Rate %</h3>
+      <div class="chart-box" style="height:420px"><canvas id="barGrowth"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-wrap">
+    <h3>Last Month Change (Feb 26 &rarr; Mar 26)</h3>
+    <div class="chart-box" style="height:360px"><canvas id="barLastMonth"></canvas></div>
+  </div>
+</div>
+
+<div id="monthly" class="section">
+  <h2 class="section-title">&#128203; Full Monthly Data</h2>
+  <p class="section-sub">Month-by-month follower counts for all tracked accounts</p>
+  <div class="table-wrap"><table>
+    <thead><tr id="monthHead"></tr></thead>
+    <tbody id="tblMonthly"></tbody>
+  </table></div>
+</div>
+
+</div>
+
+<div class="footer">Data sourced from <strong>SocialBlade</strong> &middot; Report generated March 26, 2026 &middot; 7 Instagram accounts analyzed &middot; Torneiras & Metais</div>
+
+<script>
+const ACCOUNTS = [{"name": "@krona_brasil", "link": "https://www.instagram.com/krona_brasil/", "months": ["Mar 25", "Apr 25", "May 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [80475, 81533, 82404, 83505, 83946, 84384, 84673, 84865, 85227, 85582, 86237, 87404]}, {"name": "@kohlerbrasil", "link": "https://www.instagram.com/kohlerbrasil/", "months": ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [180404, 180078, 179953, 181322, 183321, 188404, 192915, 196947, 197570, 198902, 199452, 198934, 199295]}, {"name": "@canalblukit", "link": "https://www.instagram.com/canalblukit/", "months": ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [107769, 109360, 112953, 115043, 117539, 123184, 127368, 128538, 134839, 135649, 139400, 142502, 146274]}, {"name": "@censibrasil", "link": "https://www.instagram.com/censibrasil/", "months": ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [22775, 23578, 24508, 25184, 25851, 26573, 27255, 27845, 29510, 31528, 33111, 33976, 35410]}, {"name": "@hansgrohe", "link": "https://www.instagram.com/hansgrohe/", "months": ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [158805, 159584, 166449, 178098, 179048, 179118, 179084, 179344, 180424, 180507, 181822, 182223]}, {"name": "@pingoo.casa", "link": "https://www.instagram.com/pingoo.casa/", "months": ["Mar 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [253572, 280966, 300353, 311908, 322048, 330235, 338429, 350664, 355712, 361210, 366088, 369189]}, {"name": "@casadastorneirasoficial", "link": "https://www.instagram.com/casadastorneirasoficial/", "months": ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"], "data": [60970, 60928, 60757, 60673, 60506, 60329, 60126, 59966, 59813, 59647, 59378, 59232, 59106]}];
+const ALL_MONTHS = ["Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26"];
+
+function latest(a){ return a.data[a.data.length-1]; }
+function earliest(a){ for(let v of a.data) if(v!==null) return v; return null; }
+function hasHistory(a){ return a.data.length > 1; }
+function netGain(a){ if(!hasHistory(a)) return null; const e=earliest(a),l=latest(a); return (e&&l)?l-e:null; }
+function growthPct(a){ if(!hasHistory(a)) return null; const e=earliest(a),l=latest(a); return (e&&l&&e>0)?((l-e)/e*100):0; }
+
+function aligned(a){
+  return ALL_MONTHS.map(m=>{
+    const idx=a.months.indexOf(m);
+    return idx!==-1?a.data[idx]:null;
+  });
+}
+function monthChange(arr,i){ return(i>0&&arr[i]!==null&&arr[i-1]!==null)?arr[i]-arr[i-1]:null; }
+function lastMonthGain(a){
+  const al=aligned(a);
+  return monthChange(al,ALL_MONTHS.length-1);
+}
+function last3Gain(a){
+  const al=aligned(a);
+  let sum=0,has=false;
+  for(let i=ALL_MONTHS.length-3;i<ALL_MONTHS.length;i++){const c=monthChange(al,i);if(c!==null){sum+=c;has=true;}}
+  return has?sum:null;
+}
+function avgMonthly(a){
+  if(!hasHistory(a)) return null;
+  const n=netGain(a);
+  const numMonths=a.data.filter(v=>v!==null).length-1;
+  return numMonths>0?Math.round(n/numMonths):null;
+}
+
+const fmt=v=>v!==null&&v!==undefined?v.toLocaleString():'<span class="na">N/A</span>';
+const fmtSign=v=>{
+  if(v===null||v===undefined) return '<span class="na">N/A</span>';
+  const cls=v>=0?'pos':'neg';
+  return `<span class="${cls}">${v>=0?'+':''}${v.toLocaleString()}</span>`;
+};
+const fmtPct=v=>{
+  if(v===null||v===undefined) return '<span class="na">N/A</span>';
+  const cls=v>=0?'pos':'neg';
+  return `<span class="${cls}">${v>=0?'+':''}${v.toFixed(1)}%</span>`;
+};
+const medal=i=>i===0?'&#129351;':i===1?'&#129352;':i===2?'&#129353;':(i+1);
+const nameLink=a=>`<a href="${a.link}" target="_blank" style="color:var(--text);text-decoration:none">${a.name}</a>`;
+
+// 1. Followers
+const byFollowers=[...ACCOUNTS].sort((a,b)=>latest(b)-latest(a));
+const topF=latest(byFollowers[0]);
+document.getElementById('tblFollowers').innerHTML=byFollowers.map((a,i)=>{
+  const diff=latest(a)-topF;
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${fmt(latest(a))}</td><td>${i===0?'&mdash;':fmtSign(diff)}</td></tr>`;
+}).join('');
+
+// 2. Growth %
+const byGrowth=[...ACCOUNTS].sort((a,b)=>(growthPct(b)||0)-(growthPct(a)||0));
+document.getElementById('tblGrowth').innerHTML=byGrowth.map((a,i)=>{
+  const g=growthPct(a);
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${fmtPct(g)}</td><td>${fmt(latest(a))}</td><td>${hasHistory(a)?fmt(earliest(a)):'<span class="na">N/A</span>'}</td></tr>`;
+}).join('');
+
+// 3. Net Gain
+const byNet=[...ACCOUNTS].sort((a,b)=>(netGain(b)||0)-(netGain(a)||0));
+document.getElementById('tblNet').innerHTML=byNet.map((a,i)=>{
+  const n=netGain(a),g=growthPct(a);
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${n!==null?fmtSign(n):'<span class="na">N/A</span>'}</td><td>${fmtPct(g)}</td><td>${fmt(latest(a))}</td></tr>`;
+}).join('');
+
+// 4. Avg Monthly
+const byAvg=[...ACCOUNTS].sort((a,b)=>(avgMonthly(b)||0)-(avgMonthly(a)||0));
+document.getElementById('tblAvg').innerHTML=byAvg.map((a,i)=>{
+  const av=avgMonthly(a);
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${av!==null?fmtSign(av):'<span class="na">N/A</span>'}</td><td>${fmt(latest(a))}</td><td>${fmtPct(growthPct(a))}</td></tr>`;
+}).join('');
+
+// 5. Last Month
+const byLast=[...ACCOUNTS].filter(a=>hasHistory(a)).sort((a,b)=>(lastMonthGain(b)||0)-(lastMonthGain(a)||0));
+document.getElementById('tblLast').innerHTML=byLast.map((a,i)=>{
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${fmtSign(lastMonthGain(a))}</td><td>${fmt(latest(a))}</td></tr>`;
+}).join('');
+
+// 6. Last 3 Months
+const byLast3=[...ACCOUNTS].filter(a=>hasHistory(a)).sort((a,b)=>(last3Gain(b)||0)-(last3Gain(a)||0));
+document.getElementById('tblLast3').innerHTML=byLast3.map((a,i)=>{
+  return `<tr><td>${medal(i)}</td><td>${nameLink(a)}</td><td>${fmtSign(last3Gain(a))}</td><td>${fmt(latest(a))}</td><td>${fmtPct(growthPct(a))}</td></tr>`;
+}).join('');
+
+// Monthly Data Table
+const headRow=document.getElementById('monthHead');
+headRow.innerHTML='<th>Month</th>'+ACCOUNTS.map(a=>`<th style="writing-mode:vertical-lr;text-orientation:mixed;padding:10px 6px;font-size:.7rem;min-width:40px">${a.name}</th>`).join('');
+document.getElementById('tblMonthly').innerHTML=ALL_MONTHS.map((m,mi)=>{
+  const cells=ACCOUNTS.map(a=>{
+    const al=aligned(a);
+    const v=al[mi];
+    const c=monthChange(al,mi);
+    return `<td>${v!==null?v.toLocaleString():'<span class="na">&mdash;</span>'}${v!==null&&c!==null?`<br><small style="color:${c>=0?'var(--green)':'var(--red)'}">${c>=0?'+':''}${c.toLocaleString()}</small>`:''}</td>`;
+  }).join('');
+  return `<tr><td style="font-weight:600;white-space:nowrap">${m}</td>${cells}</tr>`;
+}).join('');
+
+// Charts
+const COLORS=['#833AB4','#E1306C','#F77737','#FFDC80','#34d399','#60a5fa','#a78bfa','#f472b6','#fb923c','#38bdf8','#4ade80','#e879f9','#fbbf24'];
+const gridColor='#282842';
+const defaults={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{position:'bottom',labels:{color:'#9090aa',usePointStyle:true,padding:12,font:{size:11}}}},
+  scales:{x:{ticks:{color:'#8888a4',font:{size:10}},grid:{color:gridColor}},y:{ticks:{color:'#8888a4',callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},grid:{color:gridColor}}}
+};
+
+// Line chart
+const lineAccounts=ACCOUNTS.filter(a=>hasHistory(a));
+new Chart(document.getElementById('lineChart'),{
+  type:'line',
+  data:{
+    labels:ALL_MONTHS,
+    datasets:lineAccounts.map((a,i)=>{
+      const al=aligned(a);
+      return{label:a.name,data:al,borderColor:COLORS[i%COLORS.length],backgroundColor:COLORS[i%COLORS.length]+'18',fill:false,tension:.3,pointRadius:3,pointHoverRadius:6,borderWidth:2,spanGaps:true};
+    })
+  },
+  options:{...defaults,interaction:{intersect:false,mode:'index'},
+    plugins:{...defaults.plugins,tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y||0).toLocaleString()}}}
+  }
+});
+
+// Bar: Followers
+const sortedF=[...ACCOUNTS].sort((a,b)=>latest(b)-latest(a));
+new Chart(document.getElementById('barFollowers'),{
+  type:'bar',
+  data:{
+    labels:sortedF.map(a=>a.name),
+    datasets:[{data:sortedF.map(a=>latest(a)),backgroundColor:COLORS.slice(0,sortedF.length).map(c=>c+'cc'),borderRadius:6,barPercentage:.7}]
+  },
+  options:{...defaults,indexAxis:'y',plugins:{...defaults.plugins,legend:{display:false}},
+    scales:{x:{...defaults.scales.x},y:{ticks:{color:'#e8e8f0',font:{size:11,weight:600}},grid:{display:false}}}
+  }
+});
+
+// Bar: Growth %
+const sortedG=[...ACCOUNTS].filter(a=>hasHistory(a)).sort((a,b)=>(growthPct(b)||0)-(growthPct(a)||0));
+new Chart(document.getElementById('barGrowth'),{
+  type:'bar',
+  data:{
+    labels:sortedG.map(a=>a.name),
+    datasets:[{data:sortedG.map(a=>+(growthPct(a)||0).toFixed(1)),backgroundColor:sortedG.map((_,i)=>COLORS[i%COLORS.length]+'cc'),borderRadius:6,barPercentage:.7}]
+  },
+  options:{...defaults,indexAxis:'y',plugins:{...defaults.plugins,legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.parsed.x>=0?'+':'')+ctx.parsed.x+'%'}}},
+    scales:{x:{ticks:{color:'#8888a4',callback:v=>v+'%'},grid:{color:gridColor}},y:{ticks:{color:'#e8e8f0',font:{size:11,weight:600}},grid:{display:false}}}
+  }
+});
+
+// Bar: Last Month
+const sortedLM=[...ACCOUNTS].filter(a=>hasHistory(a)).sort((a,b)=>(lastMonthGain(b)||0)-(lastMonthGain(a)||0));
+new Chart(document.getElementById('barLastMonth'),{
+  type:'bar',
+  data:{
+    labels:sortedLM.map(a=>a.name),
+    datasets:[{data:sortedLM.map(a=>lastMonthGain(a)||0),
+      backgroundColor:sortedLM.map(a=>(lastMonthGain(a)||0)>=0?'#34d399aa':'#f87171aa'),borderRadius:4,barPercentage:.65}]
+  },
+  options:{...defaults,plugins:{...defaults.plugins,legend:{display:false},tooltip:{callbacks:{label:ctx=>(ctx.parsed.y>=0?'+':'')+ctx.parsed.y.toLocaleString()}}}}
+});
+
+// Smooth scroll
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',e=>{e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
