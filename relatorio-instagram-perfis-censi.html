@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Top 10 posts virais &mdash; Torneiras &amp; Metais &bull; Gerado em 26/03/2026 12:49</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">700</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">146</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">846</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,998</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,462</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">697</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">13</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">710</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,969</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">134</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">677</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">683</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,774</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">62</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">228</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">231</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2,279</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">27</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">135</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">11</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">146</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,346</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">109</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#6</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">9</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">19</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">24</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">169</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">48</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#7</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">14</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">17</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">30</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">137</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@pingoo.casa">@pingoo.casa</option><option value="@krona_brasil">@krona_brasil</option><option value="@canalblukit">@canalblukit</option><option value="@hansgrohe">@hansgrohe</option><option value="@censibrasil">@censibrasil</option><option value="@casadastorneirasoficial">@casadastorneirasoficial</option><option value="@kohlerbrasil">@kohlerbrasil</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-16</td>
+            <td class="num">4,121</td>
+            <td class="num">256</td>
+            <td class="num engagement">4,377</td>
+            <td class="caption" title="Reforma da casa dos meus pais: o novo banheiro está perfeito com @pingoo.casa! o que acharam? nós AMAMOS! e tem cupom desconto: THAISADALMUT 🤍✨  . parceria">Reforma da casa dos meus pais: o novo banheiro está perfeito com @pingoo.casa! o que acharam? nós AMAMOS! e tem cupom de...</td>
+            <td><a href="https://www.instagram.com/p/DV8sWc6Da8e" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-20</td>
+            <td class="num">3,319</td>
+            <td class="num">34</td>
+            <td class="num engagement">3,353</td>
+            <td class="caption" title="Baianinho perdeu a linha e chamou o Denilson para um duelo 👀  Bora marcar o @denilsonshow aqui nos comentários para ver se ele responde!? #Sinuca #Duelo #Denilson #Bruxo">Baianinho perdeu a linha e chamou o Denilson para um duelo 👀  Bora marcar o @denilsonshow aqui nos comentários para ver ...</td>
+            <td><a href="https://www.instagram.com/p/DWHKAtvjy2R" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-01-23</td>
+            <td class="num">3,108</td>
+            <td class="num">19</td>
+            <td class="num engagement">3,127</td>
+            <td class="caption" title="É oficial: a Blukit está confirmada na FEICON 2026.  De 07 a 10 de abril, estaremos no São Paulo Expo, com um estande pensado para ir além do produto e entregar experiência, solução e conexão.  📍 Esta">É oficial: a Blukit está confirmada na FEICON 2026.  De 07 a 10 de abril, estaremos no São Paulo Expo, com um estande pe...</td>
+            <td><a href="https://www.instagram.com/p/DT2x_I8gjiZ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-25</td>
+            <td class="num">2,304</td>
+            <td class="num">97</td>
+            <td class="num engagement">2,401</td>
+            <td class="caption" title="Dica para economizar nos metais 🔥  Aqui escolhemos todos os produtos em preto e peguei tudo no site da @pingoo.casa   E nem foi publi viu? Essa casa já tá pronta a um ano e só agora pedi para ser parc">Dica para economizar nos metais 🔥  Aqui escolhemos todos os produtos em preto e peguei tudo no site da @pingoo.casa   E ...</td>
+            <td><a href="https://www.instagram.com/p/DWT6hkwjkui" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-13</td>
+            <td class="num">1,180</td>
+            <td class="num">42</td>
+            <td class="num engagement">1,222</td>
+            <td class="caption" title="Não é só fabricar, é testar cada detalhe no laboratório para aguentar a pressão do dia a dia! 💥💪  Aqui a gente coloca a mão na massa (e no PVC) para entregar o produto final com a segurança que a sua ">Não é só fabricar, é testar cada detalhe no laboratório para aguentar a pressão do dia a dia! 💥💪  Aqui a gente coloca a ...</td>
+            <td><a href="https://www.instagram.com/p/DV1CFZtGCt1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-02-02</td>
+            <td class="num">1,072</td>
+            <td class="num">4</td>
+            <td class="num engagement">1,076</td>
+            <td class="caption" title="A Blukit está confirmada na FEICON 2026!  De 07 a 10 de abril, estaremos no São Paulo Expo com um estande criado para surpreender, inspirar e apresentar soluções que fazem a diferença.  📍 Estande E131">A Blukit está confirmada na FEICON 2026!  De 07 a 10 de abril, estaremos no São Paulo Expo com um estande criado para su...</td>
+            <td><a href="https://www.instagram.com/p/DUQI54bEs-P" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-11</td>
+            <td class="num">3</td>
+            <td class="num">1,040</td>
+            <td class="num engagement">1,043</td>
+            <td class="caption" title="O amor está nos detalhes.  E eles estão na #Pingoocasa, sua melhor opção para cozinhas, banheiros e lavanderias, com designs modernos e preços super acessíveis.   Vá no site da @pingoo.casa e aproveit">O amor está nos detalhes.  E eles estão na #Pingoocasa, sua melhor opção para cozinhas, banheiros e lavanderias, com des...</td>
+            <td><a href="https://www.instagram.com/p/DVuDVnxAdkf" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-10</td>
+            <td class="num">776</td>
+            <td class="num">60</td>
+            <td class="num engagement">836</td>
+            <td class="caption" title="Para entregar um trabalho de excelência, eu acredito que precisamos do conhecimento, de material de qualidade e da ferramenta correta.  E algo que decidi anos atrás, é que quando a instalação for hidr">Para entregar um trabalho de excelência, eu acredito que precisamos do conhecimento, de material de qualidade e da ferra...</td>
+            <td><a href="https://www.instagram.com/p/DVsu769Drqf" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-20</td>
+            <td class="num">805</td>
+            <td class="num">13</td>
+            <td class="num engagement">818</td>
+            <td class="caption" title="Faltam poucos dias pra Feicon… e a gente achou que já tava tudo pronto. 👀  Mas tinha um detalhe… que fez toda a diferença. ☕  Agora sim, o time entrou no ritmo. 🚀  Nos vemos na Feicon 2026! Estande Bl">Faltam poucos dias pra Feicon… e a gente achou que já tava tudo pronto. 👀  Mas tinha um detalhe… que fez toda a diferenç...</td>
+            <td><a href="https://www.instagram.com/p/DWHcv-DDzHx" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-18</td>
+            <td class="num">739</td>
+            <td class="num">5</td>
+            <td class="num engagement">744</td>
+            <td class="caption" title="Você sabe identificar o reparo da sua válvula de descarga? 🔧💧  O modelo do acabamento é a principal pista para descobrir qual reparo usar.  O Bento preparou este guia rápido para te ajudar a identific">Você sabe identificar o reparo da sua válvula de descarga? 🔧💧  O modelo do acabamento é a principal pista para descobrir...</td>
+            <td><a href="https://www.instagram.com/p/DWBgVixFnoB" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-25</td>
+            <td class="num">666</td>
+            <td class="num">12</td>
+            <td class="num engagement">678</td>
+            <td class="caption" title="E a resposta veio!  O duelo está oficialmente confirmado 🔥 #Sinuca #Duelo #Denilson #Bruxo">E a resposta veio!  O duelo está oficialmente confirmado 🔥 #Sinuca #Duelo #Denilson #Bruxo</td>
+            <td><a href="https://www.instagram.com/p/DWTxLTCjIre" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-23</td>
+            <td class="num">589</td>
+            <td class="num">14</td>
+            <td class="num engagement">603</td>
+            <td class="caption" title="Será que o Denilson está correndo do desafio? 👀 #KronaBrasil #Duelo #BaianinhodeMauá #sinuca">Será que o Denilson está correndo do desafio? 👀 #KronaBrasil #Duelo #BaianinhodeMauá #sinuca</td>
+            <td><a href="https://www.instagram.com/p/DWPPGk2Cm2m" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-17</td>
+            <td class="num">536</td>
+            <td class="num">3</td>
+            <td class="num engagement">539</td>
+            <td class="caption" title="How do you envision the bathroom of the future?💧_x000D_ _x000D_ An interdisciplinary team of Hansgrohe innovators together with our long-time design partner PHOENIX asked themselves the same question.">How do you envision the bathroom of the future?💧_x000D_ _x000D_ An interdisciplinary team of Hansgrohe innovators togeth...</td>
+            <td><a href="https://www.instagram.com/p/DV-mUU6l2b3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-25</td>
+            <td class="num">405</td>
+            <td class="num">17</td>
+            <td class="num engagement">422</td>
+            <td class="caption" title="◾Welcher Duschtyp bist du◾  Ein wichtiger Faktor – gerade bei der Planung deiner Dusche: Welcher Duschtyp bist du eigentlich? Denn nicht jeder nutzt seine Dusche gleich oder hat die gleichen Erwartung">◾Welcher Duschtyp bist du◾  Ein wichtiger Faktor – gerade bei der Planung deiner Dusche: Welcher Duschtyp bist du eigent...</td>
+            <td><a href="https://www.instagram.com/p/DWULygZArgt" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-18</td>
+            <td class="num">369</td>
+            <td class="num">4</td>
+            <td class="num engagement">373</td>
+            <td class="caption" title="Força que se mede em estrutura, tecnologia e presença nacional.  Crescemos para acompanhar o ritmo das obras com produção forte, presença sólida e confiança que sustenta cada projeto 😉  #Krona  #Krona">Força que se mede em estrutura, tecnologia e presença nacional.  Crescemos para acompanhar o ritmo das obras com produçã...</td>
+            <td><a href="https://www.instagram.com/p/DWBvWxWDUPZ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-05</td>
+            <td class="num">361</td>
+            <td class="num">7</td>
+            <td class="num engagement">368</td>
+            <td class="caption" title="Na hora da obra, todo mundo tem seu jeito de chamar, mas aqui a gente entende todos os nomes! 👷‍♀️✨  E ai, você conhecia todos os nomes?   #KronaBrasil #DicaKrona #Krona">Na hora da obra, todo mundo tem seu jeito de chamar, mas aqui a gente entende todos os nomes! 👷‍♀️✨  E ai, você conhecia...</td>
+            <td><a href="https://www.instagram.com/p/DVg6izMiTeq" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-01-05</td>
+            <td class="num">301</td>
+            <td class="num">3</td>
+            <td class="num engagement">304</td>
+            <td class="caption" title="O Portal do Lojista Blukit foi pensado para tornar sua rotina mais prática, rápida e eficiente, com acesso a informações e ferramentas essenciais sempre que você precisar.  ⠀ Acesse agora mesmo e desc">O Portal do Lojista Blukit foi pensado para tornar sua rotina mais prática, rápida e eficiente, com acesso a informações...</td>
+            <td><a href="https://www.instagram.com/p/DTIHE0GD6hG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-22</td>
+            <td class="num">243</td>
+            <td class="num">1</td>
+            <td class="num engagement">244</td>
+            <td class="caption" title="Water shapes our lives – every single day. And it inspires us to shape the future of water. 💧✨ _x000D_ _x000D_ With technologies like EcoSmart*, you can already enjoy the same comfort while using sign">Water shapes our lives – every single day. And it inspires us to shape the future of water. 💧✨ _x000D_ _x000D_ With tech...</td>
+            <td><a href="https://www.instagram.com/p/DWLeR-dkgi-" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-24</td>
+            <td class="num">231</td>
+            <td class="num">12</td>
+            <td class="num engagement">243</td>
+            <td class="caption" title="🔩 Solução compacta para instalações inteligentes. O Joelho 90° de Latão Cromado Censi (Ref. 850630) é ideal para adaptações em locais com pouco espaço ou de difícil acesso, deixando a instalação mais ">🔩 Solução compacta para instalações inteligentes. O Joelho 90° de Latão Cromado Censi (Ref. 850630) é ideal para adaptaç...</td>
+            <td><a href="https://www.instagram.com/p/DWQyCcGxiSQ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-16</td>
+            <td class="num">213</td>
+            <td class="num">13</td>
+            <td class="num engagement">226</td>
+            <td class="caption" title="Converta válvula de descarga em caixa acoplada sem quebrar a parede.🔧  Com o Kit Conversor de Válvula de Descarga Blukit, a instalação fica muito mais prática.">Converta válvula de descarga em caixa acoplada sem quebrar a parede.🔧  Com o Kit Conversor de Válvula de Descarga Blukit...</td>
+            <td><a href="https://www.instagram.com/p/DV8WtnfljZa" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-22</td>
+            <td class="num">218</td>
+            <td class="num">3</td>
+            <td class="num engagement">221</td>
+            <td class="caption" title="Hoje é o Dia Mundial da Água. Um momento para lembrar que esse recurso essencial precisa ser cuidado todos os dias.  Na Blukit, acreditamos que cada gota conta e seguimos comprometidos com soluções qu">Hoje é o Dia Mundial da Água. Um momento para lembrar que esse recurso essencial precisa ser cuidado todos os dias.  Na ...</td>
+            <td><a href="https://www.instagram.com/p/DWLvR4Ekaon" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-20</td>
+            <td class="num">217</td>
+            <td class="num">1</td>
+            <td class="num engagement">218</td>
+            <td class="caption" title="What if saving energy and reducing bills started the moment you turn on the tap? 💧_x000D_ _x000D_ Hot water is the biggest energy consumer in bathrooms — and often runs even when it’s not needed. _x00">What if saving energy and reducing bills started the moment you turn on the tap? 💧_x000D_ _x000D_ Hot water is the bigge...</td>
+            <td><a href="https://www.instagram.com/p/DWGU4u0mdDM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-19</td>
+            <td class="num">217</td>
+            <td class="num">0</td>
+            <td class="num engagement">217</td>
+            <td class="caption" title="Já pensou em trocar só o acabamento da válvula sem mexer na base? 👀  Com o Conversor Blukit, base Docol vira Hydra Max e Hydra Max vira Docol. Uma solução simples que resolve um problema comum na inst">Já pensou em trocar só o acabamento da válvula sem mexer na base? 👀  Com o Conversor Blukit, base Docol vira Hydra Max e...</td>
+            <td><a href="https://www.instagram.com/p/DWEL2MkFkdj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-16</td>
+            <td class="num">167</td>
+            <td class="num">10</td>
+            <td class="num engagement">177</td>
+            <td class="caption" title="Simples ou duplo? Branco ou preto? 🧐  Dá o play para entender a diferença entre os modelos e escolher o modelo ideal para o seu ambiente.  #KronaBrasil #DicaKrona #Krona #Sifão">Simples ou duplo? Branco ou preto? 🧐  Dá o play para entender a diferença entre os modelos e escolher o modelo ideal par...</td>
+            <td><a href="https://www.instagram.com/p/DV8UnN2k42o" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-18</td>
+            <td class="num">174</td>
+            <td class="num">1</td>
+            <td class="num engagement">175</td>
+            <td class="caption" title="“Our Green Vision is an inspiring invitation to rethink how we use water in our everyday lives and to create resource‑saving solutions together,” says Hans Jürgen Kalmbach, CEO of the Hansgrohe Group.">“Our Green Vision is an inspiring invitation to rethink how we use water in our everyday lives and to create resource‑sa...</td>
+            <td><a href="https://www.instagram.com/p/DWBLE42Coq1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-12</td>
+            <td class="num">169</td>
+            <td class="num">4</td>
+            <td class="num engagement">173</td>
+            <td class="caption" title="Afinal, o que faz uma casa ser, de fato, um lar? 🌿☕  Para mim, são essas casas brasileiras que não só decoram, mas guardam memórias, hábitos e histórias em cada cantinho. É um jeito de morar que valor">Afinal, o que faz uma casa ser, de fato, um lar? 🌿☕  Para mim, são essas casas brasileiras que não só decoram, mas guard...</td>
+            <td><a href="https://www.instagram.com/p/DVycgAXDvXA" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-16</td>
+            <td class="num">164</td>
+            <td class="num">2</td>
+            <td class="num engagement">166</td>
+            <td class="caption" title="The future of the bathroom starts with a vision. 💧🌍_x000D_ _x000D_ With Green Vision Beyond Water, we explore what tomorrow’s bathroom culture could look like — a vision that inspires how we rethink w">The future of the bathroom starts with a vision. 💧🌍_x000D_ _x000D_ With Green Vision Beyond Water, we explore what tomor...</td>
+            <td><a href="https://www.instagram.com/p/DV8BnWaCpy5" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-11</td>
+            <td class="num">162</td>
+            <td class="num">1</td>
+            <td class="num engagement">163</td>
+            <td class="caption" title="Planning your bathroom but struggling with limited space?​_x000D_ Here are 5 smart design hacks that make small bathrooms feel bigger ✨​_x000D_ _x000D_ 1️⃣ Light colors expand the space​_x000D_ Bright">Planning your bathroom but struggling with limited space?​_x000D_ Here are 5 smart design hacks that make small bathroom...</td>
+            <td><a href="https://www.instagram.com/p/DVvJs2RjDXv" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-21</td>
+            <td class="num">143</td>
+            <td class="num">0</td>
+            <td class="num engagement">143</td>
+            <td class="caption" title="Rethinking water – and making it better today.🌍💧_x000D_ _x000D_ With Hydraloop, we’re turning parts of our Green Vision into reality: an innovative graywater recycling solution that treats used shower">Rethinking water – and making it better today.🌍💧_x000D_ _x000D_ With Hydraloop, we’re turning parts of our Green Vision ...</td>
+            <td><a href="https://www.instagram.com/p/DWI5npLoBEW" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-19</td>
+            <td class="num">136</td>
+            <td class="num">1</td>
+            <td class="num engagement">137</td>
+            <td class="caption" title="💧Did you know the biggest energy consumer in your bathroom is hot water? _x000D_ Yet that warm water holds energy — often wasted down the drain._x000D_ _x000D_ Imagine if we could capture it. With our">💧Did you know the biggest energy consumer in your bathroom is hot water? _x000D_ Yet that warm water holds energy — ofte...</td>
+            <td><a href="https://www.instagram.com/p/DWD29LAj7WS" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-02</td>
+            <td class="num">124</td>
+            <td class="num">5</td>
+            <td class="num engagement">129</td>
+            <td class="caption" title="Com a Krona, a qualidade está onde muitos não veem, mas todos sentem na pressão ideal da água, na ausência de vazamentos, na durabilidade que atravessa os anos…  Você pode não ver.  Mas sente quando é">Com a Krona, a qualidade está onde muitos não veem, mas todos sentem na pressão ideal da água, na ausência de vazamentos...</td>
+            <td><a href="https://www.instagram.com/p/DVYdVFPEYzC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-20</td>
+            <td class="num">122</td>
+            <td class="num">7</td>
+            <td class="num engagement">129</td>
+            <td class="caption" title="Ter a cozinha aberta é maravilhoso para receber os amigos, mas dá aquele frio na barriga na hora de planejar cada detalhe, né? 🍷✨  Pra te ajudar, selecionei 10 inspirações que provam que dá pra ter um">Ter a cozinha aberta é maravilhoso para receber os amigos, mas dá aquele frio na barriga na hora de planejar cada detalh...</td>
+            <td><a href="https://www.instagram.com/p/DWHBOvIpT71" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-07</td>
+            <td class="num">121</td>
+            <td class="num">5</td>
+            <td class="num engagement">126</td>
+            <td class="caption" title="A primeira sexta do ano foi marcada de muito, muito trabalho intenso. 🔥  Dois treinos e uma classificação que garantiu ao Gaetano a primeira pole position de 2026 e ao Fraga o P2. Sim, dobradinha do t">A primeira sexta do ano foi marcada de muito, muito trabalho intenso. 🔥  Dois treinos e uma classificação que garantiu a...</td>
+            <td><a href="https://www.instagram.com/p/DVk8X5ZDSnS" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-13</td>
+            <td class="num">100</td>
+            <td class="num">4</td>
+            <td class="num engagement">104</td>
+            <td class="caption" title="Transformar a sala em um refúgio particular é mais fácil com o toque do verde. 🌿✨   Além de purificar o ar, elas trazem vida e aquela sensação de aconchego que a gente ama.  Qual dessas espécies você ">Transformar a sala em um refúgio particular é mais fácil com o toque do verde. 🌿✨   Além de purificar o ar, elas trazem ...</td>
+            <td><a href="https://www.instagram.com/p/DV1APtsjoY0" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-13</td>
+            <td class="num">96</td>
+            <td class="num">5</td>
+            <td class="num engagement">101</td>
+            <td class="caption" title="SUA CONTA DE ÁGUA ESTÁ MENTINDO PRA VOCÊ! 💧⚠️  O vilão da sua economia pode estar escondido dentro da caixa acoplada. No DIA 05 do Código da Manutenção, eu revelo o que eu instalo nos meus clientes: o">SUA CONTA DE ÁGUA ESTÁ MENTINDO PRA VOCÊ! 💧⚠️  O vilão da sua economia pode estar escondido dentro da caixa acoplada. No...</td>
+            <td><a href="https://www.instagram.com/p/DV01b3cDu0J" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td><a href="https://www.instagram.com/hansgrohe/" target="_blank">@hansgrohe</a></td>
+            <td>2026-03-23</td>
+            <td class="num">99</td>
+            <td class="num">0</td>
+            <td class="num engagement">99</td>
+            <td class="caption" title="🌍✨ Caring for you. Caring for our planet. _x000D_ _x000D_ With the hansgrohe Pulsify Planet Edition, we rethink the shower experience from start to finish — delivering innovations that empower conscio">🌍✨ Caring for you. Caring for our planet. _x000D_ _x000D_ With the hansgrohe Pulsify Planet Edition, we rethink the show...</td>
+            <td><a href="https://www.instagram.com/p/DWOllb5gW_b" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-25</td>
+            <td class="num">85</td>
+            <td class="num">2</td>
+            <td class="num engagement">87</td>
+            <td class="caption" title="Economizar água é uma atitude que começa nos detalhes.  As Torneiras Temporizadas Blukit liberam água apenas pelo tempo necessário e fecham automaticamente, ajudando a evitar desperdícios, especialmen">Economizar água é uma atitude que começa nos detalhes.  As Torneiras Temporizadas Blukit liberam água apenas pelo tempo ...</td>
+            <td><a href="https://www.instagram.com/p/DWTiFCcFilW" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-17</td>
+            <td class="num">76</td>
+            <td class="num">8</td>
+            <td class="num engagement">84</td>
+            <td class="caption" title="💧 Mais água onde você precisa e controle total do sistema. Quando a pressão da rede não chega com força suficiente, a Válvula Transferidora de Pressão Censi (Ref. 96800) utiliza a própria pressão da r">💧 Mais água onde você precisa e controle total do sistema. Quando a pressão da rede não chega com força suficiente, a Vá...</td>
+            <td><a href="https://www.instagram.com/p/DV_OTYBEfp2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-17</td>
+            <td class="num">64</td>
+            <td class="num">12</td>
+            <td class="num engagement">76</td>
+            <td class="caption" title="Banheiro com cara de hotel cinco estrelas? É pra já! ✨   Deixe as visitas babando com um desses vasos sanitários que são puro design e sofisticação. 🏡  Chegou a hora de dar aquele upgrade que seu lava">Banheiro com cara de hotel cinco estrelas? É pra já! ✨   Deixe as visitas babando com um desses vasos sanitários que são...</td>
+            <td><a href="https://www.instagram.com/p/DV_BsCHkUkt" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-12</td>
+            <td class="num">61</td>
+            <td class="num">14</td>
+            <td class="num engagement">75</td>
+            <td class="caption" title="PARE de jogar dinheiro pelo esgoto!🚽💸 Muita gente usa o mecanismo de descarga errado e nem imagina o prejuízo na conta de água. Mostrei nesse vídeo de acrílico como o sistema de duplo acionamento econ">PARE de jogar dinheiro pelo esgoto!🚽💸 Muita gente usa o mecanismo de descarga errado e nem imagina o prejuízo na conta d...</td>
+            <td><a href="https://www.instagram.com/p/DVw3LAnjAHG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td><a href="https://www.instagram.com/krona_brasil/" target="_blank">@krona_brasil</a></td>
+            <td>2026-03-10</td>
+            <td class="num">73</td>
+            <td class="num">1</td>
+            <td class="num engagement">74</td>
+            <td class="caption" title="Grandes obras começam com decisões importantes!  Escolher Krona é garantir tecnologia, qualidade e segurança na parte mais importante da construção, a que sustenta tudo.  É essa escolha que evita impr">Grandes obras começam com decisões importantes!  Escolher Krona é garantir tecnologia, qualidade e segurança na parte ma...</td>
+            <td><a href="https://www.instagram.com/p/DVtWuItjbZb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-09</td>
+            <td class="num">43</td>
+            <td class="num">31</td>
+            <td class="num engagement">74</td>
+            <td class="caption" title="POV: Você encontrou os protagonistas da sua nova cozinha 🏠  Design, resistência e o par ideal para facilitar seu dia a dia. Às vezes, o segredo da reforma está na escolha certa dos detalhes.  GOSTOU? ">POV: Você encontrou os protagonistas da sua nova cozinha 🏠  Design, resistência e o par ideal para facilitar seu dia a d...</td>
+            <td><a href="https://www.instagram.com/p/DVqbOrfEYHn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-11</td>
+            <td class="num">69</td>
+            <td class="num">4</td>
+            <td class="num engagement">73</td>
+            <td class="caption" title="Quem aí também é fã dessa mistura entre o rústico e o dourado? 🌾💛✨  Esse moodboard no estilo Farmhouse mostra como os metais em Gold podem transformar uma estética simples em algo super sofisticado, s">Quem aí também é fã dessa mistura entre o rústico e o dourado? 🌾💛✨  Esse moodboard no estilo Farmhouse mostra como os me...</td>
+            <td><a href="https://www.instagram.com/p/DVv3vYMjj8_" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2024-12-13</td>
+            <td class="num">33</td>
+            <td class="num">9</td>
+            <td class="num engagement">42</td>
+            <td class="caption" title="Legenda: Aproveite os melhores preços do Brasil e faça suas compras agora com até 3% OFF no boleto e 6X no cartão. 🛒 Renove sua cozinha! Compre agora. Link na bio #dicasdeestilo">Legenda: Aproveite os melhores preços do Brasil e faça suas compras agora com até 3% OFF no boleto e 6X no cartão. 🛒 Ren...</td>
+            <td><a href="https://www.instagram.com/p/DDhc_B5v66b" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-13</td>
+            <td class="num">3</td>
+            <td class="num">33</td>
+            <td class="num engagement">36</td>
+            <td class="caption" title="Imagina um spa dentro de casa? Com os novos lançamentos da Kohler, é possível criar um ambiente dedicado ao bem-estar na sua residência, unindo tecnologia e design.   Para que o público sinta (literal">Imagina um spa dentro de casa? Com os novos lançamentos da Kohler, é possível criar um ambiente dedicado ao bem-estar na...</td>
+            <td><a href="https://www.instagram.com/p/DVzHPYPgWVP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2025-02-15</td>
+            <td class="num">28</td>
+            <td class="num">7</td>
+            <td class="num engagement">35</td>
+            <td class="caption" title="Com mais de 35 anos de experiência, a escolha pela Casa das Torneiras garante qualidade e o menor preço do Brasil. Aproveite 3% off no boleto e parcele suas compras até 6x no crédito.  Elegância ao se">Com mais de 35 anos de experiência, a escolha pela Casa das Torneiras garante qualidade e o menor preço do Brasil. Aprov...</td>
+            <td><a href="https://www.instagram.com/p/DGGEMt5C68c" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2024-12-16</td>
+            <td class="num">27</td>
+            <td class="num">4</td>
+            <td class="num engagement">31</td>
+            <td class="caption" title="Produtos premium que garantem estilo e funcionalidade. Celebre com a elegância que você merece e aproveite descontos especiais. ✨ Aproveite o 3% OFF no boleto Aproveite Agora! Link na bio. #dicas #cas">Produtos premium que garantem estilo e funcionalidade. Celebre com a elegância que você merece e aproveite descontos esp...</td>
+            <td><a href="https://www.instagram.com/p/DDooPUTKTZ6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-20</td>
+            <td class="num">28</td>
+            <td class="num">2</td>
+            <td class="num engagement">30</td>
+            <td class="caption" title="🚿💡 Instalar mecanismo de entrada pode ser simples, sim!  A Porca Rápida 1/2&quot; (Ref. 9430) da Censi foi desenvolvida para trazer mais agilidade na instalação. ✔ Rosca padrão 1/2”  ✔ Ideal para espaços r">🚿💡 Instalar mecanismo de entrada pode ser simples, sim!  A Porca Rápida 1/2&quot; (Ref. 9430) da Censi foi desenvolvida ...</td>
+            <td><a href="https://www.instagram.com/p/DWG8X0aiiDL" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>49</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2024-10-04</td>
+            <td class="num">23</td>
+            <td class="num">6</td>
+            <td class="num engagement">29</td>
+            <td class="caption" title="Tenha a temperatura ideal o ano todo com nossos misturadores de cozinha.   Pague em até 6x no cartão ou ganhe 3% OFF no boleto!   Excelência em materiais hidráulicos 🚿 link na bio #casadastorneiras #t">Tenha a temperatura ideal o ano todo com nossos misturadores de cozinha.   Pague em até 6x no cartão ou ganhe 3% OFF no ...</td>
+            <td><a href="https://www.instagram.com/p/DAt0mPvvK2m" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>50</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-18</td>
+            <td class="num">25</td>
+            <td class="num">2</td>
+            <td class="num engagement">27</td>
+            <td class="caption" title="Menos desperdício, mais controle. 🚽💧 Você já parou para pensar em quanta água vai embora sem necessidade em cada descarga? Com o Kit para Caixa Acoplada - Entrada Master Flux e Saída Dual Flush Superi">Menos desperdício, mais controle. 🚽💧 Você já parou para pensar em quanta água vai embora sem necessidade em cada descarg...</td>
+            <td><a href="https://www.instagram.com/p/DWCKhGzFH-P" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>51</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2025-02-13</td>
+            <td class="num">21</td>
+            <td class="num">5</td>
+            <td class="num engagement">26</td>
+            <td class="caption" title="Na Casa das Torneiras, a inovação se une ao design sofisticado para transformar sua cozinha.  Aproveite condições especiais: 3% off com boleto e até 6x no cartão. Escolha a combinação perfeita entre e">Na Casa das Torneiras, a inovação se une ao design sofisticado para transformar sua cozinha.  Aproveite condições especi...</td>
+            <td><a href="https://www.instagram.com/p/DGBuGaLvemv" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>52</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-19</td>
+            <td class="num">23</td>
+            <td class="num">2</td>
+            <td class="num engagement">25</td>
+            <td class="caption" title="✨ Leveza no toque para facilitar o dia a dia.  O Mecanismo de Saída Soft Touch Superior Censi (Ref.: 9540) oferece um acionamento muito mais confortável, com até 90% menos esforço que os modelos tradi">✨ Leveza no toque para facilitar o dia a dia.  O Mecanismo de Saída Soft Touch Superior Censi (Ref.: 9540) oferece um ac...</td>
+            <td><a href="https://www.instagram.com/p/DWEvWwNk_xx" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>53</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-11</td>
+            <td class="num">21</td>
+            <td class="num">4</td>
+            <td class="num engagement">25</td>
+            <td class="caption" title="🚿✨ Um detalhe que faz diferença no acabamento do lavatório. A Válvula para Lavatório 7/8&quot; Censi (Ref. 7236) une visual elegante e funcionamento preciso no escoamento da água. Com acabamento em aço ino">🚿✨ Um detalhe que faz diferença no acabamento do lavatório. A Válvula para Lavatório 7/8&quot; Censi (Ref. 7236) une vis...</td>
+            <td><a href="https://www.instagram.com/p/DVwI9N-lth4" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>54</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2024-12-15</td>
+            <td class="num">18</td>
+            <td class="num">5</td>
+            <td class="num engagement">23</td>
+            <td class="caption" title="Garanta um toque especial em sua cozinha. Aproveite as facilidades de pagamento com 3% OFF no boleto ou parcele em até 6x no cartão Modernidade na Cozinha Prepare-se para as festas! link na bio #casao">Garanta um toque especial em sua cozinha. Aproveite as facilidades de pagamento com 3% OFF no boleto ou parcele em até 6...</td>
+            <td><a href="https://www.instagram.com/p/DDmVLpDC736" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>55</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-09</td>
+            <td class="num">3</td>
+            <td class="num">18</td>
+            <td class="num engagement">21</td>
+            <td class="caption" title="Kohler apresenta instalação com assinatura Versa dentro da programação oficial da DW!  Em momento de renovação da Flagship e expansão de parcerias estratégicas, ESPAÇO DE TRANSIÇÃO organiza a entrada ">Kohler apresenta instalação com assinatura Versa dentro da programação oficial da DW!  Em momento de renovação da Flagsh...</td>
+            <td><a href="https://www.instagram.com/p/DVpKwmTFwYp" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>56</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-06</td>
+            <td class="num">3</td>
+            <td class="num">16</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="A transformação convida à reflexão, situando a mudança como força ao invés de incerteza.  Visite &quot;Espaço de Transição&quot; na Design Week, de 05 a 22 de março   Alameda Gabriel Monteiro da Silva - 663  Co">A transformação convida à reflexão, situando a mudança como força ao invés de incerteza.  Visite &quot;Espaço de Transiç...</td>
+            <td><a href="https://www.instagram.com/p/DVhN9COAYkH" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>57</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-02</td>
+            <td class="num">3</td>
+            <td class="num">16</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="O estande da Kohler na Expo Revestir 2025 é vencedor do IF Design Awards 2026, uma das mais conceituadas premiações globais, com juri composto por mais de 100 designers de 21 países. O troféu foi na c">O estande da Kohler na Expo Revestir 2025 é vencedor do IF Design Awards 2026, uma das mais conceituadas premiações glob...</td>
+            <td><a href="https://www.instagram.com/p/DVZg07UgUJ2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>58</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2024-10-05</td>
+            <td class="num">12</td>
+            <td class="num">6</td>
+            <td class="num engagement">18</td>
+            <td class="caption" title="Aproveite as condições imperdíveis e descubra nossa variedade de opções para misturadores de banheiro!link na bio #casadastorneirasoficial  #torneirasbanheiro">Aproveite as condições imperdíveis e descubra nossa variedade de opções para misturadores de banheiro!link na bio #casad...</td>
+            <td><a href="https://www.instagram.com/p/DAvwMpIK7PC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>59</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-24</td>
+            <td class="num">3</td>
+            <td class="num">15</td>
+            <td class="num engagement">18</td>
+            <td class="caption" title="Durante o mês de Março, a KEC São Paulo abriu suas portas para a 15ª DW! ( @dwsemanadedesign)  A instalação, assinada pela Versa ( @versa.versa.versa), explorou a transição como momento estratégico de">Durante o mês de Março, a KEC São Paulo abriu suas portas para a 15ª DW! ( @dwsemanadedesign)  A instalação, assinada pe...</td>
+            <td><a href="https://www.instagram.com/p/DWSNtVqkYyN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>60</td>
+            <td><a href="https://www.instagram.com/canalblukit/" target="_blank">@canalblukit</a></td>
+            <td>2026-03-26</td>
+            <td class="num">16</td>
+            <td class="num">0</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Economizar água pode ser mais simples do que parece.💧  Algumas soluções ajudam a reduzir o consumo sem comprometer o uso no dia a dia:  ✔ Acionadores duplos: permitem escolher a quantidade de água da ">Economizar água pode ser mais simples do que parece.💧  Algumas soluções ajudam a reduzir o consumo sem comprometer o uso...</td>
+            <td><a href="https://www.instagram.com/p/DWWG1_HlljO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>61</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-10</td>
+            <td class="num">3</td>
+            <td class="num">13</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="ENTRE SUPERFÍCIES. um estado de suspensão entre luz e profundidade. não cai. não flutua. permanece entre os dois.  ENTRE SUPERFÍCIES é uma série de obras em vídeo criada por DOISDOIS para a instalação">ENTRE SUPERFÍCIES. um estado de suspensão entre luz e profundidade. não cai. não flutua. permanece entre os dois.  ENTRE...</td>
+            <td><a href="https://www.instagram.com/p/DVt62VCEXst" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>62</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-04</td>
+            <td class="num">3</td>
+            <td class="num">10</td>
+            <td class="num engagement">13</td>
+            <td class="caption" title="De março a maio Kohler estará presente no calendário de design e arte de São Paulo.  Entre 05/03 e 22/03, uma instalação autoral na Kohler Experience Center em São Paulo integra a programação oficial ">De março a maio Kohler estará presente no calendário de design e arte de São Paulo.  Entre 05/03 e 22/03, uma instalação...</td>
+            <td><a href="https://www.instagram.com/p/DVcEQG4ARG3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>63</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-19</td>
+            <td class="num">3</td>
+            <td class="num">7</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="A mudança está em processo. No lugar de um ambiente hermético, Espaço de Transição propõe uma pausa etérea.  As duas camadas de Cortinas Firenze @hunterdouglasbrasil instaladas no perímetro transforma">A mudança está em processo. No lugar de um ambiente hermético, Espaço de Transição propõe uma pausa etérea.  As duas cam...</td>
+            <td><a href="https://www.instagram.com/p/DWFCKYbjKNF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>64</td>
+            <td><a href="https://www.instagram.com/pingoo.casa/" target="_blank">@pingoo.casa</a></td>
+            <td>2026-03-23</td>
+            <td class="num">3</td>
+            <td class="num">7</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="Se não for pra ter um banheiro que brilha mais que meu futuro, eu nem reformo! 😂   Esse moodboard prata é a meta absoluta de hoje. Alguém mais viciado nessa estética metalizada? ✨🩶  #PingooCasa #Refor">Se não for pra ter um banheiro que brilha mais que meu futuro, eu nem reformo! 😂   Esse moodboard prata é a meta absolut...</td>
+            <td><a href="https://www.instagram.com/p/DWPYzf8pTvH" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>65</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2025-11-10</td>
+            <td class="num">4</td>
+            <td class="num">5</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="O Esquenta Black Friday começou! Descontos incríveis já estão pingando por aqui 💧 Garanta suas torneiras, duchas e acessórios com preços imperdíveis antes que acabe! #viral #casaorganizada  #torneiras">O Esquenta Black Friday começou! Descontos incríveis já estão pingando por aqui 💧 Garanta suas torneiras, duchas e acess...</td>
+            <td><a href="https://www.instagram.com/p/DQ4K-Q6gU8H" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>66</td>
+            <td><a href="https://www.instagram.com/censibrasil/" target="_blank">@censibrasil</a></td>
+            <td>2026-03-25</td>
+            <td class="num">9</td>
+            <td class="num">0</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="Quem instala sabe: a qualidade do sifão faz toda a diferença. 💧 O Sifão Duplo Censi (Ref.: 7159) é o coringa que você precisa ter. Ele é compatível com válvulas de 1.1/2&quot;, 7/8&quot; e 1.1/4&quot;, apresentando ">Quem instala sabe: a qualidade do sifão faz toda a diferença. 💧 O Sifão Duplo Censi (Ref.: 7159) é o coringa que você pr...</td>
+            <td><a href="https://www.instagram.com/p/DWUMF7OlDUI" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>67</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-18</td>
+            <td class="num">3</td>
+            <td class="num">6</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="A interrupção conduz ao impulso.   Últimos dias para percorrer “Espaço de Transição” na DW! SP.  Exposição realizada em conjunto com @versa.versa.versa, @hunterdouglasbrasil, @maqstone, @studiodoisdoi">A interrupção conduz ao impulso.   Últimos dias para percorrer “Espaço de Transição” na DW! SP.  Exposição realizada em ...</td>
+            <td><a href="https://www.instagram.com/p/DWCiO4vgU7M" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>68</td>
+            <td><a href="https://www.instagram.com/kohlerbrasil/" target="_blank">@kohlerbrasil</a></td>
+            <td>2026-03-11</td>
+            <td class="num">3</td>
+            <td class="num">3</td>
+            <td class="num engagement">6</td>
+            <td class="caption" title="A Kohler é parceira oficial para louças e metais da ABERTO. A mostra, referência no encontro entre arte, arquitetura e design acontece na icônica Casa Bola, projetada pelo arquiteto Eduardo Longo e ab">A Kohler é parceira oficial para louças e metais da ABERTO. A mostra, referência no encontro entre arte, arquitetura e d...</td>
+            <td><a href="https://www.instagram.com/p/DVwbM4PgeMP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>69</td>
+            <td><a href="https://www.instagram.com/casadastorneirasoficial/" target="_blank">@casadastorneirasoficial</a></td>
+            <td>2026-03-21</td>
+            <td class="num">3</td>
+            <td class="num">1</td>
+            <td class="num engagement">4</td>
+            <td class="caption" title="Mais do que funcionalidade, a ducha higiênica certa complementa a estética do ambiente. Dos acabamentos clássicos aos mais modernos, temos o modelo perfeito para combinar com seus metais.  Qualidade g">Mais do que funcionalidade, a ducha higiênica certa complementa a estética do ambiente. Dos acabamentos clássicos aos ma...</td>
+            <td><a href="https://www.instagram.com/p/DWJ0CDYiaWi" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 69 posts de 7 perfis &bull; 26/03/2026 12:49
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
