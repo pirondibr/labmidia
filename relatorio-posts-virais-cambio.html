@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Top 10 posts virais &mdash; Câmbio &bull; Gerado em 27/03/2026 14:57</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">194</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">198</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,941</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">39</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">103</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">12</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">115</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,029</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">115</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">60</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">66</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">599</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">57</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">52</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">56</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">520</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">37</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">5</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">40</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@remessaonline">@remessaonline</option><option value="@travelexconfidence">@travelexconfidence</option><option value="@ozcambio">@ozcambio</option><option value="@bt_xp">@bt_xp</option><option value="@melhorcambio">@melhorcambio</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-17</td>
+            <td class="num">1,560</td>
+            <td class="num">21</td>
+            <td class="num engagement">1,581</td>
+            <td class="caption" title="Na última semana, a Remessa Online proporcionou uma experiência especial para 12 mulheres, clientes da empresa: viver o Corinthians de um jeito único, junto com as Brabas.   Mais do que assistir a um ">Na última semana, a Remessa Online proporcionou uma experiência especial para 12 mulheres, clientes da empresa: viver o ...</td>
+            <td><a href="https://www.instagram.com/p/DV_qRuPDAxq" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-13</td>
+            <td class="num">213</td>
+            <td class="num">22</td>
+            <td class="num engagement">235</td>
+            <td class="caption" title="Velocidade na pista, confiança no mundo. Parceria que não mede fronteiras. 🏁🌎  Acesse @travelexconfidence e confira todos os canais de atendimento.   #TravelexConfidence #cambio">Velocidade na pista, confiança no mundo. Parceria que não mede fronteiras. 🏁🌎  Acesse @travelexconfidence e confira todo...</td>
+            <td><a href="https://www.instagram.com/p/DV0xXjdDeqM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-10</td>
+            <td class="num">198</td>
+            <td class="num">16</td>
+            <td class="num engagement">214</td>
+            <td class="caption" title="Muita gente acha que é tudo igual. Mas, quando surge uma dúvida de verdade, é aí que a diferença aparece. 🤔  No câmbio, não é só sobre clicar e seguir. É sobre ter atendimento de verdade, suporte no p">Muita gente acha que é tudo igual. Mas, quando surge uma dúvida de verdade, é aí que a diferença aparece. 🤔  No câmbio, ...</td>
+            <td><a href="https://www.instagram.com/p/DVt5QqfEfjr" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-19</td>
+            <td class="num">130</td>
+            <td class="num">28</td>
+            <td class="num engagement">158</td>
+            <td class="caption" title="Imagina estudar inglês em um paraíso no meio do Mediterrâneo, com praias surreais, festas incríveis e gente do mundo todo? 🇲🇹🔥  Malta não é só destino… é experiência de vida!   💬 Agora me conta: você ">Imagina estudar inglês em um paraíso no meio do Mediterrâneo, com praias surreais, festas incríveis e gente do mundo tod...</td>
+            <td><a href="https://www.instagram.com/p/DWEbGvEF_a1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-09</td>
+            <td class="num">137</td>
+            <td class="num">14</td>
+            <td class="num engagement">151</td>
+            <td class="caption" title="Em momentos de tensão geopolítica, compreender os movimentos do mercado global se torna ainda mais essencial.  Nossa sócia e economista, Raissa Florence, foi citada pela CNN Brasil ao analisar a recen">Em momentos de tensão geopolítica, compreender os movimentos do mercado global se torna ainda mais essencial.  Nossa sóc...</td>
+            <td><a href="https://www.instagram.com/p/DVqphryCR3E" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-20</td>
+            <td class="num">126</td>
+            <td class="num">17</td>
+            <td class="num engagement">143</td>
+            <td class="caption" title="Já pensou em visitar Manchester, no Reino Unido? Então vem com a gente conhecer um pouco da cidade em 40 segundos. ✨🇬🇧  #Manchester #midlandhotel #DicasdeViagens #manchesterlife #eurotrip">Já pensou em visitar Manchester, no Reino Unido? Então vem com a gente conhecer um pouco da cidade em 40 segundos. ✨🇬🇧  ...</td>
+            <td><a href="https://www.instagram.com/p/DV_RTDGCQYG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-25</td>
+            <td class="num">120</td>
+            <td class="num">8</td>
+            <td class="num engagement">128</td>
+            <td class="caption" title="💳💸 Seu dinheiro SUMIU do cartão no exterior? Calma… pode ser o tal do duplo câmbio.  Você olha a fatura e pensa: “Esse valor não bate…” “Meu dinheiro simplesmente desapareceu?”  Respira 😅 Não é erro e">💳💸 Seu dinheiro SUMIU do cartão no exterior? Calma… pode ser o tal do duplo câmbio.  Você olha a fatura e pensa: “Esse v...</td>
+            <td><a href="https://www.instagram.com/p/DWT4ZlGEWFD" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-12</td>
+            <td class="num">118</td>
+            <td class="num">9</td>
+            <td class="num engagement">127</td>
+            <td class="caption" title="O mercado cripto no Brasil entrou em um novo ciclo, e entender a regulação deixou de ser apenas jurídico, agora é estratégia.  Rodrigo Xavier, CEO da OZ Câmbio, participou do encontro sobre o novo cic">O mercado cripto no Brasil entrou em um novo ciclo, e entender a regulação deixou de ser apenas jurídico, agora é estrat...</td>
+            <td><a href="https://www.instagram.com/p/DVy9PnlCQ42" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-25</td>
+            <td class="num">110</td>
+            <td class="num">16</td>
+            <td class="num engagement">126</td>
+            <td class="caption" title="Novo endereço, mesma essência, agora ainda mais perto de você. ☕️  O primeiro mês da @bt_xp no @downtownrj já mostrou que evolução se constrói com proximidade, boas conversas e visão de futuro.  Passa">Novo endereço, mesma essência, agora ainda mais perto de você. ☕️  O primeiro mês da @bt_xp no @downtownrj já mostrou qu...</td>
+            <td><a href="https://www.instagram.com/p/DWUP4ncivds" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-10</td>
+            <td class="num">118</td>
+            <td class="num">7</td>
+            <td class="num engagement">125</td>
+            <td class="caption" title="Quando o petróleo cai, o impacto não fica só no mercado de energia. Ele chega rápido ao câmbio. Ontem, nosso CEO, Rodrigo Xavier,  participou de uma entrevista na CNBC @otimesbrasil para analisar o mo">Quando o petróleo cai, o impacto não fica só no mercado de energia. Ele chega rápido ao câmbio. Ontem, nosso CEO, Rodrig...</td>
+            <td><a href="https://www.instagram.com/p/DVtWNLsFvQW" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2025-08-28</td>
+            <td class="num">117</td>
+            <td class="num">0</td>
+            <td class="num engagement">117</td>
+            <td class="caption" title="No mercado financeiro, cada decisão importa. E quando o assunto é investir no exterior, confiança é fundamental.  O Rubinho escolheu a Remessa, especialista em câmbio, para enviar recursos e investir ">No mercado financeiro, cada decisão importa. E quando o assunto é investir no exterior, confiança é fundamental.  O Rubi...</td>
+            <td><a href="https://www.instagram.com/p/DN6NGUfibMO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2025-09-09</td>
+            <td class="num">97</td>
+            <td class="num">0</td>
+            <td class="num engagement">97</td>
+            <td class="caption" title="Grandes conquistas não acontecem por acaso. Elas nascem de escolhas seguras, passos estratégicos e confiança no caminho.   Com a Remessa Online, você tem tudo isso para levar seu patrimônio ainda mais">Grandes conquistas não acontecem por acaso. Elas nascem de escolhas seguras, passos estratégicos e confiança no caminho....</td>
+            <td><a href="https://www.instagram.com/p/DOYYFeOkanf" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-20</td>
+            <td class="num">86</td>
+            <td class="num">0</td>
+            <td class="num engagement">86</td>
+            <td class="caption" title="A gestão financeira da sua empresa está preparada para os próximos desafios?  No próximo Conexão B&amp;T XP, vamos falar sobre um ponto que muitos ignoram - mas que impacta diretamente o caixa, a operação">A gestão financeira da sua empresa está preparada para os próximos desafios?  No próximo Conexão B&amp;T XP, vamos falar...</td>
+            <td><a href="https://www.instagram.com/p/DWG_J4bF5S0" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-24</td>
+            <td class="num">77</td>
+            <td class="num">9</td>
+            <td class="num engagement">86</td>
+            <td class="caption" title="Ainda abrindo várias abas para ver o dólar?   Tem um jeito mais simples.   Com o plugin gratuito da Remessa Online, você acompanha a cotação em tempo real direto no navegador e ainda recebe alertas no">Ainda abrindo várias abas para ver o dólar?   Tem um jeito mais simples.   Com o plugin gratuito da Remessa Online, você...</td>
+            <td><a href="https://www.instagram.com/p/DWR79RaCV3E" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-26</td>
+            <td class="num">63</td>
+            <td class="num">18</td>
+            <td class="num engagement">81</td>
+            <td class="caption" title="Vai viajar para a Escócia? Então salva esse vídeo porque essas são as comidas típicas de Edimburgo que você PRECISA provar para ter uma experiência completa! 🤩🍽️  💸 E pra facilitar ainda mais, já colo">Vai viajar para a Escócia? Então salva esse vídeo porque essas são as comidas típicas de Edimburgo que você PRECISA prov...</td>
+            <td><a href="https://www.instagram.com/p/DWXGALRifuD" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-14</td>
+            <td class="num">77</td>
+            <td class="num">3</td>
+            <td class="num engagement">80</td>
+            <td class="caption" title="Além de premiar grandes histórias, o Academy Awards também leva a gente para diferentes lugares do mundo. ✈️🌍   O Oscar 2026 é quase um roteiro de viagem: neste vídeo, você descobre onde foram gravado">Além de premiar grandes histórias, o Academy Awards também leva a gente para diferentes lugares do mundo. ✈️🌍   O Oscar ...</td>
+            <td><a href="https://www.instagram.com/p/DV3aGwkRTdv" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-19</td>
+            <td class="num">75</td>
+            <td class="num">4</td>
+            <td class="num engagement">79</td>
+            <td class="caption" title="Ontem o FED anunciou a taxa de juros dos EUA e o Copom a taxa Selic. Mas como isso impacta as operações de câmbio?  Comente “Estratégia” e um de nossos consultores irá entrar em contato via DM! #Câmbi">Ontem o FED anunciou a taxa de juros dos EUA e o Copom a taxa Selic. Mas como isso impacta as operações de câmbio?  Come...</td>
+            <td><a href="https://www.instagram.com/p/DWFJNO4CWM7" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2025-11-04</td>
+            <td class="num">61</td>
+            <td class="num">6</td>
+            <td class="num engagement">67</td>
+            <td class="caption" title="Há 32 anos, a B&amp;T XP conecta pessoas e empresas ao que há de melhor do mercado financeiro 🌎  Nascemos com o propósito de tornar o câmbio mais acessível, transparente e eficiente. Com o tempo, evoluímo">Há 32 anos, a B&amp;T XP conecta pessoas e empresas ao que há de melhor do mercado financeiro 🌎  Nascemos com o propósit...</td>
+            <td><a href="https://www.instagram.com/p/DQpJUszjzc8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-27</td>
+            <td class="num">62</td>
+            <td class="num">5</td>
+            <td class="num engagement">67</td>
+            <td class="caption" title="Mercados globais reagem em tempo real, e o câmbio sente primeiro.  Em entrevista ao CNBC @otimesbrasil, Raissa Florence, economista e diretora comercial da OZ, analisa o impacto da queda do petróleo e">Mercados globais reagem em tempo real, e o câmbio sente primeiro.  Em entrevista ao CNBC @otimesbrasil, Raissa Florence,...</td>
+            <td><a href="https://www.instagram.com/p/DWRovKelLPK" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2025-09-26</td>
+            <td class="num">48</td>
+            <td class="num">18</td>
+            <td class="num engagement">66</td>
+            <td class="caption" title="Oz Câmbio: autonomia e performance nas suas transferências internacionais.  Com expertise global, oferecemos uma solução premium para pessoas e empresas de todos os portes. Atuamos também com uma plat">Oz Câmbio: autonomia e performance nas suas transferências internacionais.  Com expertise global, oferecemos uma solução...</td>
+            <td><a href="https://www.instagram.com/p/DPEVHwmjhy8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-20</td>
+            <td class="num">64</td>
+            <td class="num">2</td>
+            <td class="num engagement">66</td>
+            <td class="caption" title="Lollapalooza pelo mundo: qual edição mais combina com você? 🎶🌍  De Chicago ao Brasil, passando por outros destinos icônicos, cada Lolla tem sua própria vibe, estilo de público e experiência. Se você a">Lollapalooza pelo mundo: qual edição mais combina com você? 🎶🌍  De Chicago ao Brasil, passando por outros destinos icôni...</td>
+            <td><a href="https://www.instagram.com/p/DWHalHtjc0r" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2025-12-10</td>
+            <td class="num">52</td>
+            <td class="num">7</td>
+            <td class="num engagement">59</td>
+            <td class="caption" title="Na B&amp;T XP, o que nos move são as pessoas 💚  Por trás de cada realização, existe um time que coloca dedicação, energia e expertise em tudo que faz.  Conheça um pouco de quem está nos bastidores… Aqui e">Na B&amp;T XP, o que nos move são as pessoas 💚  Por trás de cada realização, existe um time que coloca dedicação, energi...</td>
+            <td><a href="https://www.instagram.com/p/DSFeZKkkYC_" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-24</td>
+            <td class="num">54</td>
+            <td class="num">3</td>
+            <td class="num engagement">57</td>
+            <td class="caption" title="No novo episódio da série #Câmbioem1min, entenda quando a volatilidade do câmbio deixa de ser apenas uma oscilação do mercado e passa a representar um risco real para a empresa.  Empresas com importaç">No novo episódio da série #Câmbioem1min, entenda quando a volatilidade do câmbio deixa de ser apenas uma oscilação do me...</td>
+            <td><a href="https://www.instagram.com/p/DWRT_2JFHrS" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-23</td>
+            <td class="num">51</td>
+            <td class="num">2</td>
+            <td class="num engagement">53</td>
+            <td class="caption" title="Alerta para empresas: a previsibilidade de risco é estratégica, não reativa!  A @robertafolgueral , nossa Diretora de Expansão e Novos Negócios, destaca um ponto crucial para a saúde financeira de Peq">Alerta para empresas: a previsibilidade de risco é estratégica, não reativa!  A @robertafolgueral , nossa Diretora de Ex...</td>
+            <td><a href="https://www.instagram.com/p/DWPJC4hEwT0" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2025-11-17</td>
+            <td class="num">41</td>
+            <td class="num">0</td>
+            <td class="num engagement">41</td>
+            <td class="caption" title="Oferecemos soluções financeiras completas para pessoas e empresas, com atuação no Brasil e no exterior 🌍  Clique no link da bio e fale com um de nossos especialistas!">Oferecemos soluções financeiras completas para pessoas e empresas, com atuação no Brasil e no exterior 🌍  Clique no link...</td>
+            <td><a href="https://www.instagram.com/p/DRKUtAJDB35" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-23</td>
+            <td class="num">37</td>
+            <td class="num">3</td>
+            <td class="num engagement">40</td>
+            <td class="caption" title="Na última sexta-feira (20/03), nosso time marcou presença no treinamento &quot;Road to Awards - Núcleo Desenvolvimento&quot; na sede da XP, em São Paulo!  Foi um dia de imersão total, focado em produtividade e ">Na última sexta-feira (20/03), nosso time marcou presença no treinamento &quot;Road to Awards - Núcleo Desenvolvimento&q...</td>
+            <td><a href="https://www.instagram.com/p/DWPZzzskk-l" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-23</td>
+            <td class="num">35</td>
+            <td class="num">1</td>
+            <td class="num engagement">36</td>
+            <td class="caption" title="Feriadão chegando! Vai Viajar? ✈️  Aproveite 15% OFF no Seguro Viagem e Chip Internacional. Garanta também a combinação perfeita: Moeda em Espécie + Cartão Pré-pago Interncional com parcelamento em at">Feriadão chegando! Vai Viajar? ✈️  Aproveite 15% OFF no Seguro Viagem e Chip Internacional. Garanta também a combinação ...</td>
+            <td><a href="https://www.instagram.com/p/DWO0p0UERag" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2025-09-11</td>
+            <td class="num">26</td>
+            <td class="num">0</td>
+            <td class="num engagement">26</td>
+            <td class="caption" title="Construir grandes conquistas exige mais do que coragem, exige estratégia.  Quem escolhe investir no exterior entende que não se trata apenas de multiplicar recursos, mas de estruturar um legado sólido">Construir grandes conquistas exige mais do que coragem, exige estratégia.  Quem escolhe investir no exterior entende que...</td>
+            <td><a href="https://www.instagram.com/p/DOdzCOkEa1v" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-17</td>
+            <td class="num">21</td>
+            <td class="num">3</td>
+            <td class="num engagement">24</td>
+            <td class="caption" title="Na Remessa, sua transferência internacional fica mais fácil:  - Ative alertas sobre moedas do seu interesse. - Trave o valor do câmbio com o recurso de melhor cotação. - Conte com spread regressivo: q">Na Remessa, sua transferência internacional fica mais fácil:  - Ative alertas sobre moedas do seu interesse. - Trave o v...</td>
+            <td><a href="https://www.instagram.com/p/DV_aMDCEcvy" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-18</td>
+            <td class="num">16</td>
+            <td class="num">0</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Na próxima edição do Conexão B&amp;T XP, um dos convidados será Ricardo Tarantello, especialista em planejamento financeiro e seguros.  Com mais de 40 anos de experiência no mercado financeiro, Ricardo at">Na próxima edição do Conexão B&amp;T XP, um dos convidados será Ricardo Tarantello, especialista em planejamento finance...</td>
+            <td><a href="https://www.instagram.com/p/DWBohDiDEo2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-11</td>
+            <td class="num">14</td>
+            <td class="num">2</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Com mais de 500 mil clientes, somos uma empresa credenciada pelo Banco Central e adotamos protocolos rígidos de segurança.  Além disso, temos reputação “ótima” no Reclame Aqui e um time de atendimento">Com mais de 500 mil clientes, somos uma empresa credenciada pelo Banco Central e adotamos protocolos rígidos de seguranç...</td>
+            <td><a href="https://www.instagram.com/p/DVwWVQUiQDN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-10</td>
+            <td class="num">13</td>
+            <td class="num">2</td>
+            <td class="num engagement">15</td>
+            <td class="caption" title="Cada centavo convertido faz diferença para quem está longe.  Se você envia dinheiro com frequência, sabe que a variação da moeda impacta diretamente no valor que chega ao destino.  No app da Remessa O">Cada centavo convertido faz diferença para quem está longe.  Se você envia dinheiro com frequência, sabe que a variação ...</td>
+            <td><a href="https://www.instagram.com/p/DVt46IQktrn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-23</td>
+            <td class="num">14</td>
+            <td class="num">0</td>
+            <td class="num engagement">14</td>
+            <td class="caption" title="Segurança nas operações não deveria ser um diferencial, deveria ser o básico. Nossas operações de câmbio são desenhadas para quem não tem tempo a perder e nem patrimônio para arriscar.  Um sistema rob">Segurança nas operações não deveria ser um diferencial, deveria ser o básico. Nossas operações de câmbio são desenhadas ...</td>
+            <td><a href="https://www.instagram.com/p/DWPNf51CeIH" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td><a href="https://www.instagram.com/bt_xp/" target="_blank">@bt_xp</a></td>
+            <td>2026-03-23</td>
+            <td class="num">12</td>
+            <td class="num">0</td>
+            <td class="num engagement">12</td>
+            <td class="caption" title="Cenário econômico volátil? Sua empresa precisa de estratégias financeiras inteligentes!   Nosso novo material rico, &quot;Estratégias Financeiras para Pequenas e Médias Empresas em um Cenário de Volatilida">Cenário econômico volátil? Sua empresa precisa de estratégias financeiras inteligentes!   Nosso novo material rico, &quo...</td>
+            <td><a href="https://www.instagram.com/p/DWOyBx6Grz1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-18</td>
+            <td class="num">12</td>
+            <td class="num">0</td>
+            <td class="num engagement">12</td>
+            <td class="caption" title="O FED anunciou os juros dos EUA entre 3,50% e 3,75%, enquanto o Copom reduziu a taxa Selic de 15% para 14,75%, primeira redução desde 2024!  #Copom #FED #Câmbio #Economia">O FED anunciou os juros dos EUA entre 3,50% e 3,75%, enquanto o Copom reduziu a taxa Selic de 15% para 14,75%, primeira ...</td>
+            <td><a href="https://www.instagram.com/p/DWCrCkflADd" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-17</td>
+            <td class="num">11</td>
+            <td class="num">0</td>
+            <td class="num engagement">11</td>
+            <td class="caption" title="Amanhã, os olhos do mercado estarão voltados para a Super Quarta. Entre decisões do COPOM aqui e do FED nos Estados Unidos, a famosa Super Quarta costuma vir acompanhada de muita notícia e pouco enten">Amanhã, os olhos do mercado estarão voltados para a Super Quarta. Entre decisões do COPOM aqui e do FED nos Estados Unid...</td>
+            <td><a href="https://www.instagram.com/p/DV9BUOtFI4W" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-19</td>
+            <td class="num">8</td>
+            <td class="num">2</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="Precisa enviar ou receber dinheiro do exterior?  Com a Remessa Online, você faz sua transferência internacional em minutos, com taxa transparente e processo 100% online.  Sem papelada. Sem etapas desn">Precisa enviar ou receber dinheiro do exterior?  Com a Remessa Online, você faz sua transferência internacional em minut...</td>
+            <td><a href="https://www.instagram.com/p/DWE8N6OCeAe" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-01-22</td>
+            <td class="num">3</td>
+            <td class="num">6</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="🤝💰 Aumente o alcance da sua casa de câmbio com a gente! 🚀✨ Seja nosso parceiro e tenha mais clientes, mais visibilidade e mais resultados! 📈🔥  Com o MelhorCambio.com, sua casa de câmbio ganha destaque">🤝💰 Aumente o alcance da sua casa de câmbio com a gente! 🚀✨ Seja nosso parceiro e tenha mais clientes, mais visibilidade ...</td>
+            <td><a href="https://www.instagram.com/p/DFIq3p5PDsN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td><a href="https://www.instagram.com/remessaonline/" target="_blank">@remessaonline</a></td>
+            <td>2026-03-26</td>
+            <td class="num">8</td>
+            <td class="num">0</td>
+            <td class="num engagement">8</td>
+            <td class="caption" title="Na Remessa Online, você acompanha cada transação com clareza: histórico completo de transferências, status atualizado e visualização dos valores envolvidos em cada envio.  Tudo pensado para dar mais c">Na Remessa Online, você acompanha cada transação com clareza: histórico completo de transferências, status atualizado e ...</td>
+            <td><a href="https://www.instagram.com/p/DWXHyPICYY6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-05-20</td>
+            <td class="num">7</td>
+            <td class="num">0</td>
+            <td class="num engagement">7</td>
+            <td class="caption" title="🌸 Japão 2025: vem aí a viagem da sua vida! 🇯🇵✨ Se o Japão está nos seus planos, pode preparar o passaporte e o coração: separamos 5 motivos irresistíveis pra você embarcar rumo à Terra do Sol Nascente">🌸 Japão 2025: vem aí a viagem da sua vida! 🇯🇵✨ Se o Japão está nos seus planos, pode preparar o passaporte e o coração: ...</td>
+            <td><a href="https://www.instagram.com/p/DJ4VCd8NeqE" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-09-04</td>
+            <td class="num">5</td>
+            <td class="num">1</td>
+            <td class="num engagement">6</td>
+            <td class="caption" title="🌍✈️ Vai viajar ou fazer compras internacionais? Então P-A-R-A tudo e confere isso aqui! 👀👇  Você sabia que o valor da moeda estrangeira pode variar MUITO entre bancos e casas de câmbio? 💸 E se você nã">🌍✈️ Vai viajar ou fazer compras internacionais? Então P-A-R-A tudo e confere isso aqui! 👀👇  Você sabia que o valor da mo...</td>
+            <td><a href="https://www.instagram.com/p/DOMT3bdj3H0" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-06-17</td>
+            <td class="num">4</td>
+            <td class="num">1</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="🚀 Já pensou em ter sua marca vista por milhares de pessoas que buscam as melhores cotações de câmbio todos os dias? Com o #MelhorCâmbio, isso é possível! ✨  Confira 3 motivos pra se tornar nosso #parc">🚀 Já pensou em ter sua marca vista por milhares de pessoas que buscam as melhores cotações de câmbio todos os dias? Com ...</td>
+            <td><a href="https://www.instagram.com/p/DLASfiLx_LX" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-03-20</td>
+            <td class="num">5</td>
+            <td class="num">0</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="💷 Você sabia? A moeda mais antiga do mundo ainda em circulação é a Libra Esterlina! 💂‍♂️✨  Criada em 1158 pelo rei Henrique II da Inglaterra, a libra esterlina (£) tem mais de 860 anos de história! 🏰👑">💷 Você sabia? A moeda mais antiga do mundo ainda em circulação é a Libra Esterlina! 💂‍♂️✨  Criada em 1158 pelo rei Henri...</td>
+            <td><a href="https://www.instagram.com/p/DHb76dXPHM6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-02-20</td>
+            <td class="num">5</td>
+            <td class="num">0</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="Santiago com o Melhor Câmbio e a Nomad! ✈️✨  Descubra 3 lugares imperdíveis na capital chilena para tornar sua viagem ainda mais inesquecível!  Acesse o link e confira: https://www.nomadtrips.com.br/p">Santiago com o Melhor Câmbio e a Nomad! ✈️✨  Descubra 3 lugares imperdíveis na capital chilena para tornar sua viagem ai...</td>
+            <td><a href="https://www.instagram.com/p/DGTgL61yf--" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-04-24</td>
+            <td class="num">4</td>
+            <td class="num">0</td>
+            <td class="num engagement">4</td>
+            <td class="caption" title="Vai viajar para o exterior? ✈️  Então se liga nessas dicas para encontrar o melhor preço do dólar e economizar na sua viagem! 	1️⃣	Pesquise e compare valores entre várias casas de câmbio. 	2️⃣	Use a p">Vai viajar para o exterior? ✈️  Então se liga nessas dicas para encontrar o melhor preço do dólar e economizar na sua vi...</td>
+            <td><a href="https://www.instagram.com/p/DI1dl4vRgUR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td><a href="https://www.instagram.com/ozcambio/" target="_blank">@ozcambio</a></td>
+            <td>2026-03-27</td>
+            <td class="num">4</td>
+            <td class="num">0</td>
+            <td class="num engagement">4</td>
+            <td class="caption" title="Com a PartnerHub da OZ, correspondentes cambiais operam com mais eficiência, controle e escala: cadastros simplificados, operações ágeis e gestão inteligente em um único ambiente.  Até 10x mais rapide">Com a PartnerHub da OZ, correspondentes cambiais operam com mais eficiência, controle e escala: cadastros simplificados,...</td>
+            <td><a href="https://www.instagram.com/p/DWZVBsLifLm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-02-03</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Quer viajar para o Uruguai? Nós te ajudamos com o câmbio! 🇺🇾✨  Sabia que você pode comprar Peso Uruguaio pelo #MelhorCâmbio? O peso é a moeda oficial do Uruguai desde 1993 e, na cotação de hoje, custa">Quer viajar para o Uruguai? Nós te ajudamos com o câmbio! 🇺🇾✨  Sabia que você pode comprar Peso Uruguaio pelo #MelhorCâm...</td>
+            <td><a href="https://www.instagram.com/p/DFn-b6cvKC6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-01-14</td>
+            <td class="num">2</td>
+            <td class="num">1</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="💰✨ Sabia que através do #MelhorCâmbio você pode comprar #pesomexicano? 🇲🇽  Curiosidade: o #pesomexicano, que circula oficialmente no México desde 1993, foi a primeira moeda do mundo a usar o símbolo $">💰✨ Sabia que através do #MelhorCâmbio você pode comprar #pesomexicano? 🇲🇽  Curiosidade: o #pesomexicano, que circula ofi...</td>
+            <td><a href="https://www.instagram.com/p/DEzsXTivnCT" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>49</td>
+            <td><a href="https://www.instagram.com/melhorcambio/" target="_blank">@melhorcambio</a></td>
+            <td>2025-01-13</td>
+            <td class="num">2</td>
+            <td class="num">1</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="🌍✈️ VAI VIAJAR?? 📱💻 Visite MelhorCambio.com ou baixe nosso App para acompanhar as cotações de 22 moedas em tempo real!  💡 Dica extra: Faça uma oferta informando a taxa que deseja e feche o negócio do ">🌍✈️ VAI VIAJAR?? 📱💻 Visite MelhorCambio.com ou baixe nosso App para acompanhar as cotações de 22 moedas em tempo real!  ...</td>
+            <td><a href="https://www.instagram.com/p/DExEx6fxl-v" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>50</td>
+            <td><a href="https://www.instagram.com/travelexconfidence/" target="_blank">@travelexconfidence</a></td>
+            <td>2026-03-12</td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num engagement">3</td>
+            <td class="caption" title="Entre março e abril acontece a famosa temporada de sakura, quando as cerejeiras florescem e deixam o Japão coberto por paisagens cor-de-rosa.  Esse momento dura poucos dias e é celebrado com o hanami,">Entre março e abril acontece a famosa temporada de sakura, quando as cerejeiras florescem e deixam o Japão coberto por p...</td>
+            <td><a href="https://www.instagram.com/p/DVzHHiYDvt2" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 50 posts de 5 perfis &bull; 27/03/2026 14:57
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
