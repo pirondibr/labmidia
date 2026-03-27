@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Top 10 posts virais &mdash; Transplante Capilar &bull; Gerado em 27/03/2026 11:28</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4,154</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">408</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">4,562</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">41,539</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4,082</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2,066</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">41</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">2,107</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">20,664</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">407</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">612</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">138</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">750</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,117</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,375</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">663</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">15</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">678</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,634</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">150</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">185</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">9</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">194</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,850</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">91</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#6</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">175</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">177</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,752</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">17</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#7</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">87</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">93</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">871</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">64</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@clinicaharmonia">@clinicaharmonia</option><option value="@drrenanbrigante">@drrenanbrigante</option><option value="@grupocapilarbrasil">@grupocapilarbrasil</option><option value="@thiagobiancoleal">@thiagobiancoleal</option><option value="@dr.rafaelultramar">@dr.rafaelultramar</option><option value="@drcinik.global">@drcinik.global</option><option value="@dralanwells">@dralanwells</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2025-04-17</td>
+            <td class="num">13,361</td>
+            <td class="num">203</td>
+            <td class="num engagement">13,564</td>
+            <td class="caption" title="O queridíssimo @alvarogarnero decidiu ficar ainda mais cabeludo!  Realizamos o Transplante Capilar FUE Long Hair, sem nenhum corte e nenhuma raspagem do cabelo! Tudo pensado para uma rápida recuperaçã">O queridíssimo @alvarogarnero decidiu ficar ainda mais cabeludo!  Realizamos o Transplante Capilar FUE Long Hair, sem ne...</td>
+            <td><a href="https://www.instagram.com/p/DIj9TL2h_kQ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-26</td>
+            <td class="num">11,602</td>
+            <td class="num">1,921</td>
+            <td class="num engagement">13,523</td>
+            <td class="caption" title="Primer vistazo… y ya se siente el cambio.  Paso a paso, con paciencia y amor propio, porque lo mejor siempre toma su tiempo.  Esto apenas comienza… y lo que viene, promete. Ahora sí… para que hablen c">Primer vistazo… y ya se siente el cambio.  Paso a paso, con paciencia y amor propio, porque lo mejor siempre toma su tie...</td>
+            <td><a href="https://www.instagram.com/p/DWU56amkZXB" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-02-27</td>
+            <td class="num">9,790</td>
+            <td class="num">750</td>
+            <td class="num engagement">10,540</td>
+            <td class="caption" title="✨ Acompanhe a história de Dia das Mães da nossa modelo de 67 anos.  👉🏻 Ela realizou: - Lifting facial Deep Plane e Deep Neck  - Blefaroplastia superior e inferior - ⁠Bichectomia - ⁠Lifting de sobrance">✨ Acompanhe a história de Dia das Mães da nossa modelo de 67 anos.  👉🏻 Ela realizou: - Lifting facial Deep Plane e Deep ...</td>
+            <td><a href="https://www.instagram.com/p/DSqRetyEZNb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2025-10-08</td>
+            <td class="num">6,805</td>
+            <td class="num">180</td>
+            <td class="num engagement">6,985</td>
+            <td class="caption" title="O Vinícius, da dupla João Bosco &amp; Vinícius, confiou em mim para realizar o seu transplante capilar sem raspagem. 👨🏻‍🦱✨  Um procedimento planejado com todo cuidado para preservar a naturalidade, respei">O Vinícius, da dupla João Bosco &amp; Vinícius, confiou em mim para realizar o seu transplante capilar sem raspagem. 👨🏻‍...</td>
+            <td><a href="https://www.instagram.com/p/DPkCDD_DiSO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-25</td>
+            <td class="num">5,462</td>
+            <td class="num">440</td>
+            <td class="num engagement">5,902</td>
+            <td class="caption" title="👉🏻 Acompanhe @diariodomeulifting e veja a evolução do Lifting Facial de vários pacientes.  💭 Invista o seu dinheiro em procedimentos eficazes e duradouros.  👨🏻‍⚕️ Carmelo Occhipinti Filho - CRMRS 3775">👉🏻 Acompanhe @diariodomeulifting e veja a evolução do Lifting Facial de vários pacientes.  💭 Invista o seu dinheiro em p...</td>
+            <td><a href="https://www.instagram.com/p/DWUzlcVhBQs" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-24</td>
+            <td class="num">4,930</td>
+            <td class="num">360</td>
+            <td class="num engagement">5,290</td>
+            <td class="caption" title="👉🏻 Desmistificando o V LIFT  CRMRS11664 RTMariana Losso CRM 35448 RQE 33622   👨🏻‍⚕️ Carmelo Occhipinti Filho - CRMRS 37758 - MÉDICO  ✅ As informações e imagens divulgadas nesta publicação possuem cará">👉🏻 Desmistificando o V LIFT  CRMRS11664 RTMariana Losso CRM 35448 RQE 33622   👨🏻‍⚕️ Carmelo Occhipinti Filho - CRMRS 377...</td>
+            <td><a href="https://www.instagram.com/p/DWSOwYqhZjq" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-02-27</td>
+            <td class="num">4,549</td>
+            <td class="num">267</td>
+            <td class="num engagement">4,816</td>
+            <td class="caption" title="⚠️ Até quando isso vai continuar?   CRMRS11664 RT Dra Mariana Losso CRMRS35448 Dermatologista RQE33622   Carmelo Occhipinti Filho - CRMRS 37758 - MÉDICO  ✅ As informações e imagens divulgadas nesta pu">⚠️ Até quando isso vai continuar?   CRMRS11664 RT Dra Mariana Losso CRMRS35448 Dermatologista RQE33622   Carmelo Occhipi...</td>
+            <td><a href="https://www.instagram.com/p/DUHLySqERU9" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2025-07-28</td>
+            <td class="num">4,461</td>
+            <td class="num">251</td>
+            <td class="num engagement">4,712</td>
+            <td class="caption" title="Uma nova visão a construir. Dentro e fora de você.  Um novo momento. Uma possibilidade para sua vivência. Transformação. O que você sempre quis. O que você precisa para estar perto do equilíbrio. Bele">Uma nova visão a construir. Dentro e fora de você.  Um novo momento. Uma possibilidade para sua vivência. Transformação....</td>
+            <td><a href="https://www.instagram.com/p/DMnEaXBxDKj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-16</td>
+            <td class="num">3,359</td>
+            <td class="num">54</td>
+            <td class="num engagement">3,413</td>
+            <td class="caption" title="Quem vê o @tayrone no palco hoje muitas vezes nem imagina… mas ele já fez transplante capilar comigo.  E isso, pra mim, é a parte mais importante do meu trabalho.  Porque o melhor resultado de um tran">Quem vê o @tayrone no palco hoje muitas vezes nem imagina… mas ele já fez transplante capilar comigo.  E isso, pra mim, ...</td>
+            <td><a href="https://www.instagram.com/p/DV7OUfljnq4" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2025-01-16</td>
+            <td class="num">2,413</td>
+            <td class="num">570</td>
+            <td class="num engagement">2,983</td>
+            <td class="caption" title="Sabemos que a decisão de realizar um transplante capilar é importante, e queremos que você se sinta cuidado em cada detalhe.   Por isso, no Grupo Capilar Brasil, pensamos em toda a experiência – do co">Sabemos que a decisão de realizar um transplante capilar é importante, e queremos que você se sinta cuidado em cada deta...</td>
+            <td><a href="https://www.instagram.com/p/DDK7JiFRrNb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2025-11-15</td>
+            <td class="num">1,945</td>
+            <td class="num">599</td>
+            <td class="num engagement">2,544</td>
+            <td class="caption" title="✅✅✅ RECORDE MUNDIAL DE EXTRAÇÃO EM UM ÚNICO PROCEDIMENTO, É DO BRASIL!!!! APENAS CABELOS DA ÁREA DA NUCA E LATERIAS ✅✅✅ 💎💎 O recorde mundial é  1 - Em um único procedimento no mesmo dia, as clínicas f">✅✅✅ RECORDE MUNDIAL DE EXTRAÇÃO EM UM ÚNICO PROCEDIMENTO, É DO BRASIL!!!! APENAS CABELOS DA ÁREA DA NUCA E LATERIAS ✅✅✅ ...</td>
+            <td><a href="https://www.instagram.com/p/DRF9qO6ESIu" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-01-14</td>
+            <td class="num">1,626</td>
+            <td class="num">0</td>
+            <td class="num engagement">1,626</td>
+            <td class="caption" title="Rio Ferdinand, the legendary captain of Manchester United and a pillar of the England national team, entrusted the renowned Dr. Cinik Hospital in Turkiye for his remarkable hair transformation🌟 Witnes">Rio Ferdinand, the legendary captain of Manchester United and a pillar of the England national team, entrusted the renow...</td>
+            <td><a href="https://www.instagram.com/p/C0_4fQQrGjG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-11</td>
+            <td class="num">1,474</td>
+            <td class="num">26</td>
+            <td class="num engagement">1,500</td>
+            <td class="caption" title="Nesse paciente, a calvície avançou de forma difusa. Aqueles casos que incomodam principalmente na piscina, sob luz direta ou em ambientes muito iluminados.  Antes mesmo da cirurgia, utilizamos o Folli">Nesse paciente, a calvície avançou de forma difusa. Aqueles casos que incomodam principalmente na piscina, sob luz diret...</td>
+            <td><a href="https://www.instagram.com/p/DVuVl6yDsuq" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-25</td>
+            <td class="num">740</td>
+            <td class="num">90</td>
+            <td class="num engagement">830</td>
+            <td class="caption" title="👏🏻👏🏻 Paciente @leone3rito APENAS 5 MESES 🏆🏆 AS 6 DICAS DE OURO PARA VOCÊ ESCOLHER A SUA CLÍNICA🏆 🏆  1) PERGUNTE QUANTAS CIRURGIAS A CLÍNICA JÁ REALIZOU. E se o médico tem no mínimo 3.000 cirurgias no ">👏🏻👏🏻 Paciente @leone3rito APENAS 5 MESES 🏆🏆 AS 6 DICAS DE OURO PARA VOCÊ ESCOLHER A SUA CLÍNICA🏆 🏆  1) PERGUNTE QUANTAS ...</td>
+            <td><a href="https://www.instagram.com/p/DWSZoiyke0e" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2025-12-16</td>
+            <td class="num">703</td>
+            <td class="num">48</td>
+            <td class="num engagement">751</td>
+            <td class="caption" title="A transformação não está só no cabelo.  Está no olhar Na respiração  Na confiança No sorriso   Restauramos muito mais que fios aqui na ultramar.  @c.roger.borges">A transformação não está só no cabelo.  Está no olhar Na respiração  Na confiança No sorriso   Restauramos muito mais qu...</td>
+            <td><a href="https://www.instagram.com/p/DSTYmcLAe2O" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-17</td>
+            <td class="num">633</td>
+            <td class="num">11</td>
+            <td class="num engagement">644</td>
+            <td class="caption" title="O que realmente define um bom transplante capilar?  Nesse caso, o paciente optou pela abordagem sem raspagem, e sim, era possível.  Mas é importante entender: raspar ou não raspar não é o que determin">O que realmente define um bom transplante capilar?  Nesse caso, o paciente optou pela abordagem sem raspagem, e sim, era...</td>
+            <td><a href="https://www.instagram.com/p/DV__wIWDt3O" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2025-12-21</td>
+            <td class="num">476</td>
+            <td class="num">14</td>
+            <td class="num engagement">490</td>
+            <td class="caption" title="Quando até quem já tá no auge decide ajustar não é sobre “ficar bonito” É sobre potência, precisão.  No caso do @gutogalamba , o trabalho foi cirúrgico no sentido literal: densidade,  transição suave ">Quando até quem já tá no auge decide ajustar não é sobre “ficar bonito” É sobre potência, precisão.  No caso do @gutogal...</td>
+            <td><a href="https://www.instagram.com/p/DSijjpcgW-6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-17</td>
+            <td class="num">262</td>
+            <td class="num">53</td>
+            <td class="num engagement">315</td>
+            <td class="caption" title="✅ VOCÊ ACREDITA QUE ESTE RESULTADO DE CALVÍCIE GRAU 7, FOI RESOLVIDO EM UM ÚNICO PROCEDIMENTO? Paciente @drmarcelo.cardoso um verdadeiro espetáculo de resultado! 💎💎 Você sabia que somos os criadores d">✅ VOCÊ ACREDITA QUE ESTE RESULTADO DE CALVÍCIE GRAU 7, FOI RESOLVIDO EM UM ÚNICO PROCEDIMENTO? Paciente @drmarcelo.cardo...</td>
+            <td><a href="https://www.instagram.com/p/DWALIqUkRJF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-24</td>
+            <td class="num">295</td>
+            <td class="num">19</td>
+            <td class="num engagement">314</td>
+            <td class="caption" title="✨ Além da preocupação com o resultado final da cirurgia plástica, a cicatrização sempre é uma preocupação a mais.  👉🏻 Elas quase não apresentam sintomas físicos, mas de certo modo interferem na autoes">✨ Além da preocupação com o resultado final da cirurgia plástica, a cicatrização sempre é uma preocupação a mais.  👉🏻 El...</td>
+            <td><a href="https://www.instagram.com/p/DWSH4xCBJgT" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-18</td>
+            <td class="num">294</td>
+            <td class="num">12</td>
+            <td class="num engagement">306</td>
+            <td class="caption" title="Thiago Bianco é cirurgião capilar e uma das maiores referências mundiais em transplante de cabelo. Fundador do Instituto Thiago Bianco, ele revolucionou a área com técnicas avançadas e foco em resulta">Thiago Bianco é cirurgião capilar e uma das maiores referências mundiais em transplante de cabelo. Fundador do Instituto...</td>
+            <td><a href="https://www.instagram.com/p/DWB8wrQlpKY" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-18</td>
+            <td class="num">263</td>
+            <td class="num">5</td>
+            <td class="num engagement">268</td>
+            <td class="caption" title="Transplante capilar fica natural mesmo?  O segredo está na colocação de cada fio, respeitando direção, ângulo e principalmente a densidade ideal para cada caso.  E no vídeo eu te mostro alguns antes e">Transplante capilar fica natural mesmo?  O segredo está na colocação de cada fio, respeitando direção, ângulo e principa...</td>
+            <td><a href="https://www.instagram.com/p/DWCsSymkUJw" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-23</td>
+            <td class="num">242</td>
+            <td class="num">4</td>
+            <td class="num engagement">246</td>
+            <td class="caption" title="8 meses depois… e o melhor resultado não foi só o cabelo.  Foi acordar, colocar uma camisa e sair de casa sem pensar nele.  Sem gel estratégico. Sem penteado calculado. Sem perder tempo no espelho.  D">8 meses depois… e o melhor resultado não foi só o cabelo.  Foi acordar, colocar uma camisa e sair de casa sem pensar nel...</td>
+            <td><a href="https://www.instagram.com/p/DWPdTlyjTrN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-24</td>
+            <td class="num">222</td>
+            <td class="num">17</td>
+            <td class="num engagement">239</td>
+            <td class="caption" title="E se fosse possível prever o seu resultado antes mesmo de começar?  A medicina capilar entrou em um novo nível.  Com o teste genético, deixamos de trabalhar com estimativas e passamos a trabalhar com ">E se fosse possível prever o seu resultado antes mesmo de começar?  A medicina capilar entrou em um novo nível.  Com o t...</td>
+            <td><a href="https://www.instagram.com/p/DWRJaGEgvLR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-26</td>
+            <td class="num">187</td>
+            <td class="num">22</td>
+            <td class="num engagement">209</td>
+            <td class="caption" title="⚜️ Definição masculina não é exagero, é HARMONIA.  👉🏻 A Lipo HD masculina valoriza abdômen, peitoral e flancos com naturalidade, respeitando o seu biotipo. Nada de resultado artificial. É sobre presen">⚜️ Definição masculina não é exagero, é HARMONIA.  👉🏻 A Lipo HD masculina valoriza abdômen, peitoral e flancos com natur...</td>
+            <td><a href="https://www.instagram.com/p/DWXReVZhlyk" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-24</td>
+            <td class="num">192</td>
+            <td class="num">16</td>
+            <td class="num engagement">208</td>
+            <td class="caption" title="Queda de cabelo em mulheres não é só estética, é autoestima, identidade e confiança.  E por muito tempo, muitas deixaram de buscar o transplante capilar por medo de raspar o cabelo… Mas isso mudou.  H">Queda de cabelo em mulheres não é só estética, é autoestima, identidade e confiança.  E por muito tempo, muitas deixaram...</td>
+            <td><a href="https://www.instagram.com/p/DWSI3rukXob" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-24</td>
+            <td class="num">201</td>
+            <td class="num">6</td>
+            <td class="num engagement">207</td>
+            <td class="caption" title="Cada caso exige uma estratégia.  O Fábio chegou buscando transplante na coroa.  Mas, na consulta, ficou claro que esse não era o melhor caminho naquele momento.  A coroa poderia responder bem ao trata">Cada caso exige uma estratégia.  O Fábio chegou buscando transplante na coroa.  Mas, na consulta, ficou claro que esse n...</td>
+            <td><a href="https://www.instagram.com/p/DWSB1hDkUIs" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-16</td>
+            <td class="num">177</td>
+            <td class="num">28</td>
+            <td class="num engagement">205</td>
+            <td class="caption" title="Você sabia que o Grupo Capilar Brasil refaz de 15 a 20 procedimentos por semana? São pacientes que chegam com resultados insatisfatórios de outras clínicas e, pior, com a área doadora já comprometida.">Você sabia que o Grupo Capilar Brasil refaz de 15 a 20 procedimentos por semana? São pacientes que chegam com resultados...</td>
+            <td><a href="https://www.instagram.com/p/DV9lTAdkU9l" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-09</td>
+            <td class="num">185</td>
+            <td class="num">12</td>
+            <td class="num engagement">197</td>
+            <td class="caption" title="Mais do que cabelo, é sobre devolver identidade.  Esse paciente chegou incomodado com o avanço das entradas e a perda de densidade frontal. Fiz um planejamento cuidadoso para reconstruir a hairline re">Mais do que cabelo, é sobre devolver identidade.  Esse paciente chegou incomodado com o avanço das entradas e a perda de...</td>
+            <td><a href="https://www.instagram.com/p/DVrki-sDn1g" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-23</td>
+            <td class="num">158</td>
+            <td class="num">28</td>
+            <td class="num engagement">186</td>
+            <td class="caption" title="⚜️ Clínica harmonia realiza 3 transplantes capilares diariamente, mais de 7.000 transplantes realizados.  CRM/RS 11664 RT: Dra Mariana Losso - CRM/RS 35448 Dermatologista-RQE33622  ✅ As informações e ">⚜️ Clínica harmonia realiza 3 transplantes capilares diariamente, mais de 7.000 transplantes realizados.  CRM/RS 11664 R...</td>
+            <td><a href="https://www.instagram.com/p/DWPjH-AB3UF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-19</td>
+            <td class="num">150</td>
+            <td class="num">15</td>
+            <td class="num engagement">165</td>
+            <td class="caption" title="Naturalidade não é detalhe… é tudo.  Um transplante capilar bem feito não pode ser percebido, ele precisa apenas realçar o que já é seu.  Cada fio é implantado individualmente, respeitando direção, ân">Naturalidade não é detalhe… é tudo.  Um transplante capilar bem feito não pode ser percebido, ele precisa apenas realçar...</td>
+            <td><a href="https://www.instagram.com/p/DWFTJrzEdcz" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-20</td>
+            <td class="num">148</td>
+            <td class="num">10</td>
+            <td class="num engagement">158</td>
+            <td class="caption" title="Essas palavras do @vicente.falcao ecoam o que muitos sentem, mas poucos têm a coragem de agir. Escolher o Transplante Capilar pelo sistema de Alta Densidade®️ foi o gesto de amor próprio que deu iníci">Essas palavras do @vicente.falcao ecoam o que muitos sentem, mas poucos têm a coragem de agir. Escolher o Transplante Ca...</td>
+            <td><a href="https://www.instagram.com/p/DWH5eKjkZev" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-18</td>
+            <td class="num">135</td>
+            <td class="num">11</td>
+            <td class="num engagement">146</td>
+            <td class="caption" title="A busca pela melhor versão não tem fronteiras. Recebemos em nossa unidade de Florianópolis o casal @elidafeltrin e @dr.ariovaldomcosta vindos de Criciúma, motivados pelo desejo de renovação e pela con">A busca pela melhor versão não tem fronteiras. Recebemos em nossa unidade de Florianópolis o casal @elidafeltrin e @dr.a...</td>
+            <td><a href="https://www.instagram.com/p/DWCv-UykUCW" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-17</td>
+            <td class="num">132</td>
+            <td class="num">9</td>
+            <td class="num engagement">141</td>
+            <td class="caption" title="Finasterida causa tudo isso que estão falando por aí?  Não.  Existe muita opinião na internet. Mas na medicina, o que vale é evidência.  Estamos falando de um medicamento usado há mais de 25 anos, com">Finasterida causa tudo isso que estão falando por aí?  Não.  Existe muita opinião na internet. Mas na medicina, o que va...</td>
+            <td><a href="https://www.instagram.com/p/DWAJRUwAYWc" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-26</td>
+            <td class="num">121</td>
+            <td class="num">9</td>
+            <td class="num engagement">130</td>
+            <td class="caption" title="O @fefrancooficial já trabalha com imagem há anos.  E chegou um momento em que a calvície começou a incomodar.  Quando ele me procurou, o objetivo era claro: se sentir bem de novo.  E o resultado vai ">O @fefrancooficial já trabalha com imagem há anos.  E chegou um momento em que a calvície começou a incomodar.  Quando e...</td>
+            <td><a href="https://www.instagram.com/p/DWXY60TEgG3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td><a href="https://www.instagram.com/clinicaharmonia/" target="_blank">@clinicaharmonia</a></td>
+            <td>2026-03-25</td>
+            <td class="num">105</td>
+            <td class="num">24</td>
+            <td class="num engagement">129</td>
+            <td class="caption" title="⚜️ Clínica harmonia realiza 3 transplantes capilares diariamente, mais de 7.000 transplantes realizados.  CRM/RS 11664 RT: Dra Mariana Losso - CRM/RS 35448 Dermatologista-RQE33622  ✅ As informações e ">⚜️ Clínica harmonia realiza 3 transplantes capilares diariamente, mais de 7.000 transplantes realizados.  CRM/RS 11664 R...</td>
+            <td><a href="https://www.instagram.com/p/DWT6wyXkagV" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-19</td>
+            <td class="num">119</td>
+            <td class="num">4</td>
+            <td class="num engagement">123</td>
+            <td class="caption" title="🇺🇸 🇺🇸 Sete meses do nosso paciente @pedrostumpf_ que veio dos Estados Unidos 🇺🇸🇺🇸 💎💎 Você sabia que somos os criadores do SISTEMA ALTA DENSIDADE®? O Grupo Capilar é a única clínica que leva no slogan ">🇺🇸 🇺🇸 Sete meses do nosso paciente @pedrostumpf_ que veio dos Estados Unidos 🇺🇸🇺🇸 💎💎 Você sabia que somos os criadores d...</td>
+            <td><a href="https://www.instagram.com/p/DWFK-CYkRYR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-22</td>
+            <td class="num">111</td>
+            <td class="num">3</td>
+            <td class="num engagement">114</td>
+            <td class="caption" title="Paris 01.26 🇫🇷🍇">Paris 01.26 🇫🇷🍇</td>
+            <td><a href="https://www.instagram.com/p/DWMMs0hEc-J" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-20</td>
+            <td class="num">108</td>
+            <td class="num">0</td>
+            <td class="num engagement">108</td>
+            <td class="caption" title="Você já sabia que transplante capilar não é igual a simplesmente plantar umas sementes de cabelo?   Por isso algumas cirurgias são extremamente artificiais e outras são como o padrão de naturalidade a">Você já sabia que transplante capilar não é igual a simplesmente plantar umas sementes de cabelo?   Por isso algumas cir...</td>
+            <td><a href="https://www.instagram.com/p/DWHOPRdEcgP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-23</td>
+            <td class="num">103</td>
+            <td class="num">2</td>
+            <td class="num engagement">105</td>
+            <td class="caption" title="A honestidade do Seu Ari nos emociona porque reflete a realidade de milhares de pacientes. Reconhecer esse desejo de mudança é o primeiro passo para resgatar a autoconfiança. No Grupo Capilar, nossa m">A honestidade do Seu Ari nos emociona porque reflete a realidade de milhares de pacientes. Reconhecer esse desejo de mud...</td>
+            <td><a href="https://www.instagram.com/p/DWPnzZeEQdU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-21</td>
+            <td class="num">90</td>
+            <td class="num">13</td>
+            <td class="num engagement">103</td>
+            <td class="caption" title="300 MIL. 🤯  Mas mais do que um número… isso aqui é confiança.  Cada mensagem, cada comentário, cada paciente que senta na cadeira e confia no nosso trabalho — é isso que construiu tudo. Nada disso ser">300 MIL. 🤯  Mas mais do que um número… isso aqui é confiança.  Cada mensagem, cada comentário, cada paciente que senta n...</td>
+            <td><a href="https://www.instagram.com/p/DWKBtp7joE8" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-20</td>
+            <td class="num">87</td>
+            <td class="num">5</td>
+            <td class="num engagement">92</td>
+            <td class="caption" title="Olha essa transformação…  O que mais chama atenção aqui não é só o resultado, é a naturalidade.  Mesmo com fios grisalhos, é totalmente possível conquistar um transplante capilar harmonioso, respeitan">Olha essa transformação…  O que mais chama atenção aqui não é só o resultado, é a naturalidade.  Mesmo com fios grisalho...</td>
+            <td><a href="https://www.instagram.com/p/DWH1K3jEWk7" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-20</td>
+            <td class="num">87</td>
+            <td class="num">4</td>
+            <td class="num engagement">91</td>
+            <td class="caption" title="Uma das queixas mais comuns entre as mulheres é a perda de densidade na parte superior do couro cabeludo.  Quando o cabelo perde volume nessa região, principalmente com luz ou ao prender, o incômodo é">Uma das queixas mais comuns entre as mulheres é a perda de densidade na parte superior do couro cabeludo.  Quando o cabe...</td>
+            <td><a href="https://www.instagram.com/p/DWHF8rmDogR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-23</td>
+            <td class="num">88</td>
+            <td class="num">1</td>
+            <td class="num engagement">89</td>
+            <td class="caption" title="O que muda quando você toma a decisão certa?  Esse resultado apenas de 6 meses, ainda em evolução!  O Gabriel chegou com uma dúvida comum… mas com algo muito claro: ele já não se sentia bem com a próp">O que muda quando você toma a decisão certa?  Esse resultado apenas de 6 meses, ainda em evolução!  O Gabriel chegou com...</td>
+            <td><a href="https://www.instagram.com/p/DWO89fdAj24" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td><a href="https://www.instagram.com/grupocapilarbrasil/" target="_blank">@grupocapilarbrasil</a></td>
+            <td>2026-03-25</td>
+            <td class="num">75</td>
+            <td class="num">8</td>
+            <td class="num engagement">83</td>
+            <td class="caption" title="De um procedimento complexo para uma experiência tranquila, segura e com resultados naturais. Se o medo era o que te impedia, agora não é mais! O Transplante Capilar pelo Sistema de Alta Densidade®️ e">De um procedimento complexo para uma experiência tranquila, segura e com resultados naturais. Se o medo era o que te imp...</td>
+            <td><a href="https://www.instagram.com/p/DWUvjIcEWU-" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-26</td>
+            <td class="num">70</td>
+            <td class="num">4</td>
+            <td class="num engagement">74</td>
+            <td class="caption" title="Currículo do Dr. Alan Wells  Dr. Alan Wells formou-se na prestigiada Faculdade de Medicina da Universidade de São Paulo (USP) em 1997. Em seguida, concluiu a residência em Cirurgia Geral, pré-requisit">Currículo do Dr. Alan Wells  Dr. Alan Wells formou-se na prestigiada Faculdade de Medicina da Universidade de São Paulo ...</td>
+            <td><a href="https://www.instagram.com/p/DRkIjNHEXOz" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-20</td>
+            <td class="num">62</td>
+            <td class="num">10</td>
+            <td class="num engagement">72</td>
+            <td class="caption" title="Nem só de dorama e K-pop vive a Coreia do Sul 🇰🇷  A verdade é que eles estão anos à frente quando o assunto é tecnologia e inovação — inclusive na medicina capilar.  Hoje eu trouxe pra vocês o BLOOME,">Nem só de dorama e K-pop vive a Coreia do Sul 🇰🇷  A verdade é que eles estão anos à frente quando o assunto é tecnologia...</td>
+            <td><a href="https://www.instagram.com/p/DWGxB-uDaLs" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-23</td>
+            <td class="num">65</td>
+            <td class="num">2</td>
+            <td class="num engagement">67</td>
+            <td class="caption" title="Uma das queixas mais comuns entre as mulheres é a rarefação na região superior do couro cabeludo.  E não é só estética… quando o cabelo molha, quando prende, quando bate a luz — a falta de densidade a">Uma das queixas mais comuns entre as mulheres é a rarefação na região superior do couro cabeludo.  E não é só estética… ...</td>
+            <td><a href="https://www.instagram.com/p/DWPjCRYAWjb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-24</td>
+            <td class="num">62</td>
+            <td class="num">1</td>
+            <td class="num engagement">63</td>
+            <td class="caption" title="O José Roberto tem 68 anos e me procurou para realizar o transplante capilar sem raspagem.  Buscamos uma solução discreta, respeitando sua rotina e proporcionando um resultado natural, sem a necessida">O José Roberto tem 68 anos e me procurou para realizar o transplante capilar sem raspagem.  Buscamos uma solução discret...</td>
+            <td><a href="https://www.instagram.com/p/DWSGENXgR0Q" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>49</td>
+            <td><a href="https://www.instagram.com/thiagobiancoleal/" target="_blank">@thiagobiancoleal</a></td>
+            <td>2026-03-26</td>
+            <td class="num">57</td>
+            <td class="num">2</td>
+            <td class="num engagement">59</td>
+            <td class="caption" title="Quando a calvície deixa de ser o foco.  O Leonardo contou que, antes, até nas fotos com a filha, o olhar não estava na lembrança.  Estava na própria imagem.  Isso muda.  Ao longo da jornada, o que era">Quando a calvície deixa de ser o foco.  O Leonardo contou que, antes, até nas fotos com a filha, o olhar não estava na l...</td>
+            <td><a href="https://www.instagram.com/p/DWWnrafAjI1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>50</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-21</td>
+            <td class="num">49</td>
+            <td class="num">3</td>
+            <td class="num engagement">52</td>
+            <td class="caption" title="Jovialidade não é sobre idade… é sobre como você se vê no espelho.  Hoje, com o transplante capilar moderno, conseguimos resultados extremamente naturais fio a fio, respeitando o desenho do seu rosto ">Jovialidade não é sobre idade… é sobre como você se vê no espelho.  Hoje, com o transplante capilar moderno, conseguimos...</td>
+            <td><a href="https://www.instagram.com/p/DWKZiSVkRTa" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>51</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-13</td>
+            <td class="num">43</td>
+            <td class="num">3</td>
+            <td class="num engagement">46</td>
+            <td class="caption" title="Transplante capilar dói?  A internet adora exagerar. A realidade é bem diferente.  Aqui na Ultramar o paciente entra no centro cirúrgico, dorme… e acorda com o trabalho praticamente feito.  Sem dor. S">Transplante capilar dói?  A internet adora exagerar. A realidade é bem diferente.  Aqui na Ultramar o paciente entra no ...</td>
+            <td><a href="https://www.instagram.com/p/DV154uggrQQ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>52</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-25</td>
+            <td class="num">44</td>
+            <td class="num">0</td>
+            <td class="num engagement">44</td>
+            <td class="caption" title="Cabelo fino não é problema — é estratégia.  Esse paciente chegou com fios naturalmente mais delicados, algo que muita gente acha que limita o resultado… mas na verdade, quando bem trabalhado, pode ent">Cabelo fino não é problema — é estratégia.  Esse paciente chegou com fios naturalmente mais delicados, algo que muita ge...</td>
+            <td><a href="https://www.instagram.com/p/DWUvGZYgWNO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>53</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-23</td>
+            <td class="num">37</td>
+            <td class="num">1</td>
+            <td class="num engagement">38</td>
+            <td class="caption" title="Ele saiu de Pernambuco com um objetivo muito claro: não queria apenas tratar a calvície… queria fazer isso com naturalidade, discrição e excelência.  Aqui na Clínica Ultramar, cada caso é planejado de">Ele saiu de Pernambuco com um objetivo muito claro: não queria apenas tratar a calvície… queria fazer isso com naturalid...</td>
+            <td><a href="https://www.instagram.com/p/DWOWFfUkdRo" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>54</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-20</td>
+            <td class="num">36</td>
+            <td class="num">2</td>
+            <td class="num engagement">38</td>
+            <td class="caption" title="Parou o tratamento… o cabelo cai tudo de uma vez?  Não.  O que volta não é “queda súbita”. É a sua genética retomando o controle.  O tratamento segura a progressão. Sem ele, o processo segue — como se">Parou o tratamento… o cabelo cai tudo de uma vez?  Não.  O que volta não é “queda súbita”. É a sua genética retomando o ...</td>
+            <td><a href="https://www.instagram.com/p/DWHpad5DTKs" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>55</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-19</td>
+            <td class="num">32</td>
+            <td class="num">0</td>
+            <td class="num engagement">32</td>
+            <td class="caption" title="Wondering how a hair transplant looks 6 months later? 🤔 Here’s the amazing result from one of our patients! ✨  Using the DHI method with 4000 grafts, you can see natural density, a restored hairline, ">Wondering how a hair transplant looks 6 months later? 🤔 Here’s the amazing result from one of our patients! ✨  Using the...</td>
+            <td><a href="https://www.instagram.com/p/DWDo9B9COfn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>56</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-22</td>
+            <td class="num">26</td>
+            <td class="num">4</td>
+            <td class="num engagement">30</td>
+            <td class="caption" title="Sempre Natural,  O meu foco é o rejuvenescimento.  Dr Alan Wells  #transplantesemraspar">Sempre Natural,  O meu foco é o rejuvenescimento.  Dr Alan Wells  #transplantesemraspar</td>
+            <td><a href="https://www.instagram.com/p/DWNIYs0kdZM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>57</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-26</td>
+            <td class="num">26</td>
+            <td class="num">1</td>
+            <td class="num engagement">27</td>
+            <td class="caption" title="O que mais incomodava ele eram as entradas e a baixa densidade na região frontal e também na coroa. Duas áreas que impactam diretamente na percepção de envelhecimento e na autoestima.  Planejamos uma ">O que mais incomodava ele eram as entradas e a baixa densidade na região frontal e também na coroa. Duas áreas que impac...</td>
+            <td><a href="https://www.instagram.com/p/DWXSH1bgaqn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>58</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-23</td>
+            <td class="num">18</td>
+            <td class="num">4</td>
+            <td class="num engagement">22</td>
+            <td class="caption" title="Resultado natural não é sorte. É técnica, planejamento e respeito à individualidade de cada paciente.  Neste caso, realizamos um transplante capilar sem raspar, preservando totalmente a aparência dura">Resultado natural não é sorte. É técnica, planejamento e respeito à individualidade de cada paciente.  Neste caso, reali...</td>
+            <td><a href="https://www.instagram.com/p/DWPjGbZkWWx" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>59</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-11</td>
+            <td class="num">21</td>
+            <td class="num">0</td>
+            <td class="num engagement">21</td>
+            <td class="caption" title="Hair loss on the crown? Not anymore! ✨  With a Crown Hair Transplant, you can restore natural density where it matters most.  ✔️ Targets thinning or bald spots on the crown ✔️ Natural-looking, long-la">Hair loss on the crown? Not anymore! ✨  With a Crown Hair Transplant, you can restore natural density where it matters m...</td>
+            <td><a href="https://www.instagram.com/p/DVv_9rNCOc3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>60</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-14</td>
+            <td class="num">19</td>
+            <td class="num">0</td>
+            <td class="num engagement">19</td>
+            <td class="caption" title="🏆We Won! 🎉  We’re proud to announce we’ve received the WhatClinic Patient Service Award 2025!  This achievement means so much to us, and it wouldn’t have been possible without the trust of our wonderf">🏆We Won! 🎉  We’re proud to announce we’ve received the WhatClinic Patient Service Award 2025!  This achievement means so...</td>
+            <td><a href="https://www.instagram.com/p/DV2w4iIgOdE" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>61</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-01-14</td>
+            <td class="num">3</td>
+            <td class="num">13</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Let’s Go Bulls! 🏀✨   We are proud to officially announce our global partnership with the Chicago Bulls, a team whose legacy, influence, and excellence have shaped the world of basketball.  Just like t">Let’s Go Bulls! 🏀✨   We are proud to officially announce our global partnership with the Chicago Bulls, a team whose leg...</td>
+            <td><a href="https://www.instagram.com/p/DRU-7XuCJKU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>62</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-21</td>
+            <td class="num">15</td>
+            <td class="num">0</td>
+            <td class="num engagement">15</td>
+            <td class="caption" title="One brother inspired the other to get a hair transplant! ✨ Watch the Taylor brothers share their full hair transplant journey at Dr. Cinik Clinic, including their experiences, results, and tips.  If y">One brother inspired the other to get a hair transplant! ✨ Watch the Taylor brothers share their full hair transplant jo...</td>
+            <td><a href="https://www.instagram.com/p/DWJOA1SAL9j" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>63</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-13</td>
+            <td class="num">15</td>
+            <td class="num">0</td>
+            <td class="num engagement">15</td>
+            <td class="caption" title="Transform your hair, transform your confidence! ✨  This incredible result was achieved with 3,300 grafts using the DHI (Direct Hair Implantation) technique, 17 months after the procedure.   Why DHI? ✅">Transform your hair, transform your confidence! ✨  This incredible result was achieved with 3,300 grafts using the DHI (...</td>
+            <td><a href="https://www.instagram.com/p/DV0ibUDCFKm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>64</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-26</td>
+            <td class="num">7</td>
+            <td class="num">6</td>
+            <td class="num engagement">13</td>
+            <td class="caption" title="Mais do que colocar cabelo, é sobre devolver densidade, naturalidade e confiança.  Aqui eu explico pessoalmente para cada paciente como planejamos um transplante capilar com foco em resultado real res">Mais do que colocar cabelo, é sobre devolver densidade, naturalidade e confiança.  Aqui eu explico pessoalmente para cad...</td>
+            <td><a href="https://www.instagram.com/p/DWXRyhiEfPe" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>65</td>
+            <td><a href="https://www.instagram.com/drrenanbrigante/" target="_blank">@drrenanbrigante</a></td>
+            <td>2026-03-25</td>
+            <td class="num">13</td>
+            <td class="num">0</td>
+            <td class="num engagement">13</td>
+            <td class="caption" title="O auto-cuidado dos homens tem crescido de forma muito grande. E se cuidar abrem-se portas inimagináveis. A era do posicionamento com elegância e autoridade é hoje.  Tive o prazer de dividir essa matér">O auto-cuidado dos homens tem crescido de forma muito grande. E se cuidar abrem-se portas inimagináveis. A era do posici...</td>
+            <td><a href="https://www.instagram.com/p/DWT9R1CjevO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>66</td>
+            <td><a href="https://www.instagram.com/dr.rafaelultramar/" target="_blank">@dr.rafaelultramar</a></td>
+            <td>2026-03-21</td>
+            <td class="num">11</td>
+            <td class="num">0</td>
+            <td class="num engagement">11</td>
+            <td class="caption" title="Alta performance não é sobre fazer mais É sobre sustentar excelência mesmo nos casos mais exigentes.  Gigassessões exigem estratégia gestão de equipe controle de tempo e precisão em cada etapa.  Porqu">Alta performance não é sobre fazer mais É sobre sustentar excelência mesmo nos casos mais exigentes.  Gigassessões exige...</td>
+            <td><a href="https://www.instagram.com/p/DWJSkPsDTqZ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>67</td>
+            <td><a href="https://www.instagram.com/dralanwells/" target="_blank">@dralanwells</a></td>
+            <td>2026-03-25</td>
+            <td class="num">9</td>
+            <td class="num">2</td>
+            <td class="num engagement">11</td>
+            <td class="caption" title="Transplante capilar não é só sobre cabelo… é sobre como você se sente consigo mesmo.  Com um resultado totalmente natural, você recupera não só os fios, mas a sua confiança, sua segurança e a vontade ">Transplante capilar não é só sobre cabelo… é sobre como você se sente consigo mesmo.  Com um resultado totalmente natura...</td>
+            <td><a href="https://www.instagram.com/p/DWUsvLdEYQa" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>68</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-26</td>
+            <td class="num">10</td>
+            <td class="num">0</td>
+            <td class="num engagement">10</td>
+            <td class="caption" title="💫 Love Your Brows Again: Women’s Eyebrow Transplant  Say goodbye to thin, uneven brows and hello to naturally fuller, beautifully defined eyebrows 💫  Eyebrow transplant is a precise procedure where he">💫 Love Your Brows Again: Women’s Eyebrow Transplant  Say goodbye to thin, uneven brows and hello to naturally fuller, be...</td>
+            <td><a href="https://www.instagram.com/p/DWWatcQCP9O" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>69</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-03-17</td>
+            <td class="num">8</td>
+            <td class="num">0</td>
+            <td class="num engagement">8</td>
+            <td class="caption" title="The Comeback Starts with the Jump! ⚡ Take the first leap with Dr Cinik and start your hair transplant journey today.✨  Regain your confidence and make your comeback. Your transformation begins now! 📲 ">The Comeback Starts with the Jump! ⚡ Take the first leap with Dr Cinik and start your hair transplant journey today.✨  R...</td>
+            <td><a href="https://www.instagram.com/p/DV-i4w7iBhl" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>70</td>
+            <td><a href="https://www.instagram.com/drcinik.global/" target="_blank">@drcinik.global</a></td>
+            <td>2026-01-14</td>
+            <td class="num">3</td>
+            <td class="num">4</td>
+            <td class="num engagement">7</td>
+            <td class="caption" title="AI can imagine moments. We’ve already lived them. Just real visits, real people, and real expertise.  Ready to be part of a story that doesn’t need AI to stand out? Contact us today and take the first">AI can imagine moments. We’ve already lived them. Just real visits, real people, and real expertise.  Ready to be part o...</td>
+            <td><a href="https://www.instagram.com/p/DSfBwlGiG7c" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 70 posts de 7 perfis &bull; 27/03/2026 11:28
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
