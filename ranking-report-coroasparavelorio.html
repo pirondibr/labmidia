@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking Report - coroasparavelorio.com.br</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface-hover: #1f2330;
+  --border: #2a2e3a;
+  --text: #e8eaf0;
+  --text-muted: #8b8fa3;
+  --accent: #4ade80;
+  --warning: #f59e0b;
+  --rank-top3: #4ade80;
+  --rank-top5: #a3e635;
+  --rank-top10: #fbbf24;
+  --rank-top20: #f97316;
+  --rank-top30: #ef4444;
+  --rank-out: #6b7280;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.header { margin-bottom: 2.5rem; }
+
+.header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.2rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.5px;
+}
+
+.header .subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.5rem;
+  min-width: 160px;
+  flex: 1;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stat-card:nth-child(5) { animation-delay: 0.5s; }
+
+.stat-card .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 0.4rem;
+}
+
+.stat-card .value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+}
+
+.controls {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.controls input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  width: 280px;
+  transition: border-color 0.2s;
+}
+
+.controls input:focus { border-color: var(--accent); }
+
+.controls select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+thead th {
+  background: var(--bg);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+thead th:hover { color: var(--accent); }
+
+tbody tr {
+  transition: background 0.15s;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+tbody tr:hover { background: var(--surface-hover); }
+
+tbody td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.rank-top3 { background: #4ade8020; color: var(--rank-top3); }
+.rank-top5 { background: #a3e63520; color: var(--rank-top5); }
+.rank-top10 { background: #fbbf2420; color: var(--rank-top10); }
+.rank-top20 { background: #f9731620; color: var(--rank-top20); }
+.rank-top30 { background: #ef444420; color: var(--rank-top30); }
+.rank-out { background: #6b728020; color: var(--rank-out); }
+
+.vol-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vol-bar {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 2px;
+  transition: width 0.4s ease;
+}
+
+.vol-text {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.page-link:hover { opacity: 1; text-decoration: underline; }
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.note {
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CoroasParaVelorio.com.br</h1>
+  <div class="subtitle">Ranking Report &mdash; Google.com.br &mdash; Abril 2026 &mdash; Search Volume: DataForSEO / Google Ads (Brasil)</div>
+</div>
+
+<div class="stats-row" id="stats"></div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Filtrar por keyword ou cidade...">
+  <select id="rankFilter">
+    <option value="all">Todas as posições</option>
+    <option value="top3">Top 3</option>
+    <option value="top5">Top 5</option>
+    <option value="top10">Top 10</option>
+    <option value="top20">Top 20</option>
+    <option value="ranked">Ranked (Top 30)</option>
+    <option value="out">Fora do Top 30</option>
+  </select>
+  <select id="sortBy">
+    <option value="rank-asc">Ranking ↑ (melhor)</option>
+    <option value="rank-desc">Ranking ↓ (pior)</option>
+    <option value="vol-desc">Volume ↓ (maior)</option>
+    <option value="vol-asc">Volume ↑ (menor)</option>
+    <option value="keyword-asc">Keyword A-Z</option>
+  </select>
+</div>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Keyword</th>
+        <th>Ranking</th>
+        <th>Search Volume /mês</th>
+        <th>Ranking Page</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div> Top 3</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a3e635"></div> Top 5</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Top 10</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> Top 20</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Top 30</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div> Fora do Top 30</div>
+</div>
+
+<div class="note">
+  <strong>Nota:</strong> Os volumes de busca são do Google Ads (via DataForSEO) para o Brasil.
+  As keywords originais usam o formato "coroa de flores para [cidade]", mas o Google Ads agrupa variações similares.
+  O volume exibido corresponde à variação "coroa de flores [cidade]" (sem "para"), que o Google reconhece como o mesmo grupo semântico.
+  Keywords com volume "&lt;10" indicam que o Google não reporta dados suficientes. "N/R" = Não ranqueado (fora do top 30).
+</div>
+
+<script>
+const DATA = [
+  {kw:"coroa de flores para Ananindeua", rank:1, vol:10, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/cidade-de-ananindeua-pa"},
+  {kw:"coroa de flores para Belém", rank:1, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-max-domino-belem-pa"},
+  {kw:"coroa de flores para Cuiabá", rank:1, vol:20, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-santa-rita-cuiaba-mt"},
+  {kw:"coroa de flores para Fortaleza", rank:1, vol:260, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-fortaleza-ce"},
+  {kw:"coroa de flores para São Gonçalo", rank:1, vol:30, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-sao-jorge-sao-goncalo-rj"},
+  {kw:"coroa de flores para Teresina", rank:1, vol:70, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-teresina-pi"},
+  {kw:"coroa de flores para Vila Velha", rank:1, vol:50, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-vila-velha-vila-velha-es"},
+  {kw:"coroa de flores para Natal", rank:1, vol:70, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-natal-rn"},
+  {kw:"coroa de flores para Belford Roxo", rank:2, vol:0, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-cemitério-de-vilar-dos-teles-belford-roxo-belford-roxo-rj"},
+  {kw:"coroa de flores para Jaboatão dos Guararapes", rank:2, vol:0, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/cemitério-da-saudade-Jaboatão-dos-Guararapes-pe"},
+  {kw:"coroa de flores para Manaus", rank:2, vol:260, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-manaus-am"},
+  {kw:"coroa de flores para Porto Velho", rank:2, vol:30, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-porto-velho-ro"},
+  {kw:"coroa de flores para Ribeirão Preto", rank:2, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/velorio-samaritano-ribeirao-preto-sp"},
+  {kw:"coroa de flores para Caxias do Sul", rank:3, vol:70, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/capela-sao-jose-caxias-do-sul-rs"},
+  {kw:"coroa de flores para João Pessoa", rank:3, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/cemiterio-parque-das-acacias-joao-pessoa-pb"},
+  {kw:"coroa de flores para Aparecida de Goiânia", rank:4, vol:10, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/cemiterio-jardim-da-paz-aparecida-de-goiania-go"},
+  {kw:"coroa de flores para Florianópolis", rank:4, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-florianopolis-sc"},
+  {kw:"coroa de flores para Guarulhos", rank:4, vol:320, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-guarulhos-sp"},
+  {kw:"coroa de flores para Porto Alegre", rank:4, vol:320, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-angelus-porto-alegre-rs"},
+  {kw:"coroa de flores para Recife", rank:4, vol:320, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-recife-pe"},
+  {kw:"coroa de flores para São José dos Campos", rank:4, vol:50, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-urbam-municipal-jose-dos-campos-sp"},
+  {kw:"coroa de flores para Goiânia", rank:5, vol:70, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-fenix-goiania-go"},
+  {kw:"coroa de flores para Juiz de Fora", rank:5, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-santa-cruz-juiz-de-fora-mg"},
+  {kw:"coroa de flores para Maceió", rank:5, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroas-de-flores-cemiterio-parque-das-flores"},
+  {kw:"coroa de flores para Osasco", rank:5, vol:50, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-e-velorio-bela-vista-osasco-sp"},
+  {kw:"coroa de flores para Curitiba", rank:6, vol:720, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-curitiba-pr"},
+  {kw:"coroa de flores para Campinas", rank:7, vol:210, page:"https://www.coroasparavelorio.com.br/cidades/coroa-de-flores-campinas-sp"},
+  {kw:"coroa de flores para Contagem", rank:7, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-contagem-mg"},
+  {kw:"coroa de flores para Feira de Santana", rank:7, vol:30, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-senhor-do-bonfim-feira-de-santana-ba"},
+  {kw:"coroa de flores para São José do Rio Preto", rank:7, vol:30, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-sao-jose-do-rio-preto-sp"},
+  {kw:"coroa de flores para Campos dos Goytacazes", rank:9, vol:0, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-campos-dos-goytacazes-campos-dos-goytacazes-rj"},
+  {kw:"coroa de flores para Joinville", rank:9, vol:320, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-sao-jorge-joinville-sc"},
+  {kw:"coroa de flores para Niterói", rank:9, vol:20, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-niteroi-rj"},
+  {kw:"coroa de flores para Santo André", rank:9, vol:30, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-santo-andre-sp"},
+  {kw:"coroa de flores para Aracaju", rank:10, vol:50, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-aracaju-se"},
+  {kw:"coroa de flores para Brasília", rank:10, vol:90, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-brasilia-df"},
+  {kw:"coroa de flores para São Luís", rank:10, vol:40, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-sao-luis-ma"},
+  {kw:"coroa de flores para Duque de Caxias", rank:11, vol:10, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-duque-de-caxias-rj"},
+  {kw:"coroa de flores para São Paulo", rank:13, vol:320, page:"https://www.coroasparavelorio.com.br/"},
+  {kw:"coroa de flores para Rio de Janeiro", rank:14, vol:170, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-rio-de-janeiro-rj"},
+  {kw:"coroa de flores para Uberlândia", rank:14, vol:70, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-uberlandia-mg"},
+  {kw:"coroa de flores para Belo Horizonte", rank:17, vol:110, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/coroa-de-flores-belo-horizonte-mg"},
+  {kw:"coroa de flores para Sorocaba", rank:17, vol:140, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-ossel-1-sorocaba-sp"},
+  {kw:"coroa de flores para Salvador", rank:22, vol:170, page:"https://www.coroasparavelorio.com.br/coroas-de-flores/funeraria-brotas-salvador-ba"},
+  {kw:"coroa de flores para Campo Grande", rank:99, vol:110, page:""},
+  {kw:"coroa de flores para Londrina", rank:99, vol:320, page:""},
+  {kw:"coroa de flores para Nova Iguaçu", rank:99, vol:20, page:""},
+  {kw:"coroa de flores para São Bernardo do Campo", rank:99, vol:10, page:""},
+  {kw:"coroa de flores para Serra", rank:99, vol:20, page:""}
+];
+
+const maxVol = Math.max(...DATA.map(d => d.vol));
+
+function getRankClass(r) {
+  if (r <= 3) return 'rank-top3';
+  if (r <= 5) return 'rank-top5';
+  if (r <= 10) return 'rank-top10';
+  if (r <= 20) return 'rank-top20';
+  if (r <= 30) return 'rank-top30';
+  return 'rank-out';
+}
+
+function getRankLabel(r) {
+  return r >= 99 ? 'N/R' : r;
+}
+
+function renderStats(data) {
+  const ranked = data.filter(d => d.rank < 99);
+  const top3 = ranked.filter(d => d.rank <= 3).length;
+  const top10 = ranked.filter(d => d.rank <= 10).length;
+  const totalVol = data.reduce((s, d) => s + d.vol, 0);
+  const avgRank = ranked.length > 0 ? (ranked.reduce((s, d) => s + d.rank, 0) / ranked.length).toFixed(1) : '-';
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="label">Keywords Total</div><div class="value">${data.length}</div></div>
+    <div class="stat-card"><div class="label">Top 3</div><div class="value" style="color:var(--rank-top3)">${top3}</div></div>
+    <div class="stat-card"><div class="label">Top 10</div><div class="value" style="color:var(--rank-top10)">${top10}</div></div>
+    <div class="stat-card"><div class="label">Avg Rank</div><div class="value">${avgRank}</div></div>
+    <div class="stat-card"><div class="label">Total Volume</div><div class="value">${totalVol.toLocaleString('pt-BR')}</div></div>
+  `;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = data.map((d, i) => {
+    const rc = getRankClass(d.rank);
+    const rl = getRankLabel(d.rank);
+    const barW = d.vol > 0 ? Math.max(4, (d.vol / maxVol) * 120) : 0;
+    const volColor = d.vol >= 200 ? 'var(--accent)' : d.vol >= 50 ? 'var(--warning)' : '#6b7280';
+    const pageShort = d.page ? d.page.replace('https://www.coroasparavelorio.com.br', '...') : '-';
+    return `<tr style="animation-delay:${i * 0.03}s">
+      <td style="color:var(--text-muted);font-size:0.8rem">${i + 1}</td>
+      <td style="font-weight:500">${d.kw}</td>
+      <td><span class="rank-badge ${rc}">${rl}</span></td>
+      <td>
+        <div class="vol-bar-container">
+          <div class="vol-bar" style="width:${barW}px;background:${volColor}"></div>
+          <span class="vol-text" style="color:${volColor}">${d.vol > 0 ? d.vol : '<10'}</span>
+        </div>
+      </td>
+      <td>${d.page ? `<a class="page-link" href="${d.page}" target="_blank" title="${d.page}">${pageShort.length > 55 ? pageShort.slice(0, 55) + '...' : pageShort}</a>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const rf = document.getElementById('rankFilter').value;
+  const sb = document.getElementById('sortBy').value;
+
+  let filtered = DATA.filter(d => {
+    if (q && !d.kw.toLowerCase().includes(q)) return false;
+    if (rf === 'top3' && d.rank > 3) return false;
+    if (rf === 'top5' && d.rank > 5) return false;
+    if (rf === 'top10' && d.rank > 10) return false;
+    if (rf === 'top20' && d.rank > 20) return false;
+    if (rf === 'ranked' && d.rank >= 99) return false;
+    if (rf === 'out' && d.rank < 99) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (sb === 'rank-asc') return a.rank - b.rank;
+    if (sb === 'rank-desc') return b.rank - a.rank;
+    if (sb === 'vol-desc') return b.vol - a.vol;
+    if (sb === 'vol-asc') return a.vol - b.vol;
+    if (sb === 'keyword-asc') return a.kw.localeCompare(b.kw);
+    return 0;
+  });
+
+  return filtered;
+}
+
+function update() {
+  const filtered = getFiltered();
+  renderStats(filtered);
+  renderTable(filtered);
+}
+
+document.getElementById('search').addEventListener('input', update);
+document.getElementById('rankFilter').addEventListener('change', update);
+document.getElementById('sortBy').addEventListener('change', update);
+
+update();
+</script>
+</body>
+</html>
