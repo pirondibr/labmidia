@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Spy - Relatorio de Engajamento</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+    }
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 3px solid #e94560;
+    }
+    .header h1 {
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .header h1 span { color: #e94560; }
+    .header p { color: #8892b0; font-size: 0.95rem; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+    .section-title {
+        font-size: 1.4rem;
+        color: #fff;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e94560;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title .icon { font-size: 1.6rem; }
+
+    /* Profile Cards */
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 16px;
+        margin-bottom: 50px;
+    }
+    .profile-card {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        transition: border-color 0.2s;
+    }
+    .profile-card:hover { border-color: #e94560; }
+    .profile-rank {
+        background: #e94560;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .profile-name a {
+        color: #fff;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .profile-name a:hover { color: #e94560; }
+    .profile-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    .metric {
+        background: #12121f;
+        border-radius: 8px;
+        padding: 8px 14px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .metric.highlight {
+        background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+    }
+    .metric-value {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .metric-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #8892b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+    .metric.highlight .metric-label { color: rgba(255,255,255,0.85); }
+
+    /* Table */
+    .table-wrapper {
+        background: #1a1a2e;
+        border: 1px solid #2a2a4a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-controls {
+        padding: 16px 20px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #2a2a4a;
+        flex-wrap: wrap;
+    }
+    .table-controls input {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+        width: 250px;
+    }
+    .table-controls input:focus { border-color: #e94560; }
+    .table-controls select {
+        background: #12121f;
+        border: 1px solid #2a2a4a;
+        color: #e0e0e0;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        background: #12121f;
+        color: #8892b0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 14px 16px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+    }
+    thead th:hover { color: #e94560; }
+    thead th .sort-arrow { margin-left: 4px; font-size: 0.65rem; }
+    tbody tr {
+        border-bottom: 1px solid #1f1f35;
+        transition: background 0.15s;
+    }
+    tbody tr:hover { background: #22223a; }
+    td {
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    td.num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+    td.engagement { color: #e94560; font-weight: 700; font-size: 0.95rem; }
+    td.caption {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #8892b0;
+        font-size: 0.82rem;
+    }
+    td a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    td a:hover { color: #e94560; text-decoration: underline; }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #555;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .profiles-grid { grid-template-columns: 1fr; }
+        .table-controls { flex-direction: column; }
+        .table-controls input { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span>Instagram</span> Spy Report</h1>
+    <p>Top 10 posts virais &mdash; Auto Custom &amp; Envelopamento &bull; Gerado em 01/04/2026 14:59</p>
+</div>
+
+<div class="container">
+
+    <div class="section-title">
+        <span class="icon">&#128200;</span> Ranking de Perfis por Engajamento Medio
+    </div>
+    <div class="profiles-grid">
+        
+    <div class="profile-card">
+        <div class="profile-rank">#1</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">166,134</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,497</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">167,631</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,661,336</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">14,972</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#2</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">5,542</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">108</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">5,650</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">55,422</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,079</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#3</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3,011</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">54</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">3,065</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">30,109</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">535</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#4</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">1,049</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">16</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">1,065</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">10,491</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">161</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#5</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">622</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">30</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">652</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">6,219</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">305</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#6</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">566</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">26</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">592</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">5,657</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">264</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#7</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">347</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">4</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">351</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3,469</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">44</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#8</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">321</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">13</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">334</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">3,208</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">130</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-card">
+        <div class="profile-rank">#9</div>
+        <div class="profile-info">
+            <div class="profile-name">
+                <a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a>
+            </div>
+            <div class="profile-metrics">
+                <div class="metric">
+                    <span class="metric-value">10</span>
+                    <span class="metric-label">Posts</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">53</span>
+                    <span class="metric-label">Avg Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">2</span>
+                    <span class="metric-label">Avg Comments</span>
+                </div>
+                <div class="metric highlight">
+                    <span class="metric-value">55</span>
+                    <span class="metric-label">Avg Engagement</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">526</span>
+                    <span class="metric-label">Total Likes</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">22</span>
+                    <span class="metric-label">Total Comments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <div class="section-title">
+        <span class="icon">&#128196;</span> Todos os Posts &mdash; Clique nas colunas para ordenar
+    </div>
+    <div class="table-wrapper">
+        <div class="table-controls">
+            <input type="text" id="searchInput" placeholder="Filtrar por perfil, texto..." onkeyup="filterTable()">
+            <select id="profileFilter" onchange="filterTable()">
+                <option value="">Todos os Perfis</option>
+                <option value="@kaironrace">@kaironrace</option><option value="@plusarteenvelopamento">@plusarteenvelopamento</option><option value="@stradalecarservice">@stradalecarservice</option><option value="@machadojackson">@machadojackson</option><option value="@l.acustom">@l.acustom</option><option value="@cbcustom_br">@cbcustom_br</option><option value="@motors_machine">@motors_machine</option><option value="@hipervisionenvelopamento">@hipervisionenvelopamento</option><option value="@autofraction">@autofraction</option>
+            </select>
+        </div>
+        <div style="overflow-x:auto;">
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0,'num')"># <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(1,'str')">Perfil <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(2,'str')">Data <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(3,'num')">Likes <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(4,'num')">Comments <span class="sort-arrow"></span></th>
+                    <th onclick="sortTable(5,'num')">Engagement <span class="sort-arrow"></span></th>
+                    <th>Caption</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2025-06-24</td>
+            <td class="num">1,454,491</td>
+            <td class="num">12,956</td>
+            <td class="num engagement">1,467,447</td>
+            <td class="caption" title="FILHA MEU ANIVERSÁRIO DE 4 ANOS FOI SÓ BOLO DE FUBÁ COM UM REFRI , ESSE PRESENTE É DE CORAÇÃO SEU PRIMEIRO CARRO ZERO KM ❤️🙏  AGR VC TÁ IGUAL O PAI ❤️ FELIZ 4 ANOS DE IDADE  . OBRIGADO @kaironrace">FILHA MEU ANIVERSÁRIO DE 4 ANOS FOI SÓ BOLO DE FUBÁ COM UM REFRI , ESSE PRESENTE É DE CORAÇÃO SEU PRIMEIRO CARRO ZERO KM...</td>
+            <td><a href="https://www.instagram.com/p/DLTCkLvyxIA" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2024-04-18</td>
+            <td class="num">134,066</td>
+            <td class="num">1,130</td>
+            <td class="num engagement">135,196</td>
+            <td class="caption" title="Hoje é um daqueles dias que ficarão marcado para sempre em nossa história. É com imensa alegria e orgulho que compartilhamos todos os detalhes de como foi a entrega do carro da lenda @ronaldo!  Foi um">Hoje é um daqueles dias que ficarão marcado para sempre em nossa história. É com imensa alegria e orgulho que compartilh...</td>
+            <td><a href="https://www.instagram.com/p/C5HFwZOuigj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2025-03-04</td>
+            <td class="num">67,023</td>
+            <td class="num">628</td>
+            <td class="num engagement">67,651</td>
+            <td class="caption" title="Humildade, pureza, simplicidade @neymarjr.  Três palavras que definem quem você é e por que inspira milhões de pessoas ao redor do mundo, incluindo a mim.  Desde o começo, tive um sonho.  Um sonho que">Humildade, pureza, simplicidade @neymarjr.  Três palavras que definem quem você é e por que inspira milhões de pessoas a...</td>
+            <td><a href="https://www.instagram.com/p/DGyBavEuX-1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2024-12-13</td>
+            <td class="num">34,288</td>
+            <td class="num">676</td>
+            <td class="num engagement">34,964</td>
+            <td class="caption" title="Apresentamos a vocês a Corintiana, nova exclusividade do @imcryansp que fizemos aqui na PLUS!ARTE!!!   Mais uma no padrão Gringo feito aqui no Brasil 🇧🇷 !!!   Unimos a Homenagem, Paixão pelo Corinthia">Apresentamos a vocês a Corintiana, nova exclusividade do @imcryansp que fizemos aqui na PLUS!ARTE!!!   Mais uma no padrã...</td>
+            <td><a href="https://www.instagram.com/p/DDiQYGdSZyj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2024-11-13</td>
+            <td class="num">16,198</td>
+            <td class="num">267</td>
+            <td class="num engagement">16,465</td>
+            <td class="caption" title="É com muito prazer que apresentamos a vocês nossa Arte feita exclusivamente para a LAMBORGHINI HURACAN do Influencer @buzeira_oficial .  Projeto único do Brasil para o Mundo,  desenvolvido completamen">É com muito prazer que apresentamos a vocês nossa Arte feita exclusivamente para a LAMBORGHINI HURACAN do Influencer @bu...</td>
+            <td><a href="https://www.instagram.com/p/DCU0WLwy9ad" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2022-05-29</td>
+            <td class="num">8,856</td>
+            <td class="num">74</td>
+            <td class="num engagement">8,930</td>
+            <td class="caption" title="😍😱 FORD GT e Porsche Carrera GT1, dois carros e muita historia, ambos projetados para as 24 de Le Mans! Que honra poder cuidar destes dois ícones, arraste para o lado e veja em detalhes o nível de per">😍😱 FORD GT e Porsche Carrera GT1, dois carros e muita historia, ambos projetados para as 24 de Le Mans! Que honra poder ...</td>
+            <td><a href="https://www.instagram.com/p/CeJVtw6uNaY" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2021-04-28</td>
+            <td class="num">8,428</td>
+            <td class="num">158</td>
+            <td class="num engagement">8,586</td>
+            <td class="caption" title="🔧🚘 Quarta feira é dia de FERRARI por aqui 😍! Qual a melhor legenda para essa foto? Deixe seu comentário! #Oficina #Manutenção #Preparação #Revisão #CheckUp #Stradale #Diagnostico #Mecânica #Remap #Dow">🔧🚘 Quarta feira é dia de FERRARI por aqui 😍! Qual a melhor legenda para essa foto? Deixe seu comentário! #Oficina #Manut...</td>
+            <td><a href="https://www.instagram.com/p/CONfZjwsuCR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2021-09-12</td>
+            <td class="num">6,232</td>
+            <td class="num">72</td>
+            <td class="num engagement">6,304</td>
+            <td class="caption" title="STRADALE EXPERIENCE!  Nada é impossível! Nem: soltar o “mito” @luigicani em um helicoptero a mais de 4.000 pés, dar um looping, atravessar um grid de esportivos com 30 carros em um dos eventos mais ex">STRADALE EXPERIENCE!  Nada é impossível! Nem: soltar o “mito” @luigicani em um helicoptero a mais de 4.000 pés, dar um l...</td>
+            <td><a href="https://www.instagram.com/p/CTuo7hzlcqN" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-02-18</td>
+            <td class="num">5,455</td>
+            <td class="num">36</td>
+            <td class="num engagement">5,491</td>
+            <td class="caption" title="Lamborghini Huracan Performante Spyder  * Customização dos cintos de segurança   * Preto para vermelho  Serviço com atendimento exclusivo na sua residência, agende aqui.   🎥 @ellevateframes @joaobatis">Lamborghini Huracan Performante Spyder  * Customização dos cintos de segurança   * Preto para vermelho  Serviço com aten...</td>
+            <td><a href="https://www.instagram.com/p/DGO3uGMMdlF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2025-09-29</td>
+            <td class="num">3,711</td>
+            <td class="num">237</td>
+            <td class="num engagement">3,948</td>
+            <td class="caption" title="Cuido da saúde, treino, alimentação… e claro, do meu carro também. 😉 Levei minha Rampage pra @l.acustom e fechei com o PPF Matte da @newxprotection , uma película de proteção que, além de proteger a p">Cuido da saúde, treino, alimentação… e claro, do meu carro também. 😉 Levei minha Rampage pra @l.acustom e fechei com o P...</td>
+            <td><a href="https://www.instagram.com/p/DPM0w27kbd9" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-13</td>
+            <td class="num">3,633</td>
+            <td class="num">160</td>
+            <td class="num engagement">3,793</td>
+            <td class="caption" title="B.O. de R$ 650 mil… e tudo começou com um detalhe que parecia simples.  No vídeo contamos essa história que aconteceu aqui na Stradale com um Porsche 992 GTS praticamente zero km.   Um caso que mostra">B.O. de R$ 650 mil… e tudo começou com um detalhe que parecia simples.  No vídeo contamos essa história que aconteceu aq...</td>
+            <td><a href="https://www.instagram.com/p/DV1o7mpEdE1" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2025-08-17</td>
+            <td class="num">3,460</td>
+            <td class="num">27</td>
+            <td class="num engagement">3,487</td>
+            <td class="caption" title="CYBERTRUCK do @wesleyalemao no seu novo Visual, Agressivo e Diferenciado no Padrão PLUS!ARTE .   Mais um do nosso ❌PAPO de MUDANÇA de COR❌  #nopadraoplusarte #plusarteenvelopamentoautomotivo #wesleyal">CYBERTRUCK do @wesleyalemao no seu novo Visual, Agressivo e Diferenciado no Padrão PLUS!ARTE .   Mais um do nosso ❌PAPO ...</td>
+            <td><a href="https://www.instagram.com/p/DNeHgOXOn6I" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-28</td>
+            <td class="num">2,694</td>
+            <td class="num">142</td>
+            <td class="num engagement">2,836</td>
+            <td class="caption" title="“Mano… o Neymar Jr. tem o padrão @kaironrace … beleza.  Mas agora o SÓSIA também tem 🤡🔥  Aí complica… porque daqui a pouco ninguém mais sabe quem é o original… mas uma coisa é certeza: o carro entrega">“Mano… o Neymar Jr. tem o padrão @kaironrace … beleza.  Mas agora o SÓSIA também tem 🤡🔥  Aí complica… porque daqui a pou...</td>
+            <td><a href="https://www.instagram.com/p/DWbz4RMgRI4" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2025-03-27</td>
+            <td class="num">2,286</td>
+            <td class="num">18</td>
+            <td class="num engagement">2,304</td>
+            <td class="caption" title="#tbt Ano passado tivemos a honra de desenvolver um projeto exclusivo para o @joaoadibemarques um empresário que inspira pelo seu olhar estratégico e paixão pela excelência. O resultado? Um carro ainda">#tbt Ano passado tivemos a honra de desenvolver um projeto exclusivo para o @joaoadibemarques um empresário que inspira ...</td>
+            <td><a href="https://www.instagram.com/p/DHt89CWJGTR" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2024-11-24</td>
+            <td class="num">2,257</td>
+            <td class="num">4</td>
+            <td class="num engagement">2,261</td>
+            <td class="caption" title="🚗✨ Customização de Cintos de Segurança Ferrari 458 Itália  Transforme o interior do seu Ferrari com um toque de exclusividade e sofisticação! Personalizamos os cintos de segurança com materiais premiu">🚗✨ Customização de Cintos de Segurança Ferrari 458 Itália  Transforme o interior do seu Ferrari com um toque de exclusiv...</td>
+            <td><a href="https://www.instagram.com/p/DCwiPC_uCiU" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2025-11-08</td>
+            <td class="num">1,757</td>
+            <td class="num">9</td>
+            <td class="num engagement">1,766</td>
+            <td class="caption" title="Se você ainda cobra barato porque “foi rápido”, você não entendeu o jogo. O cliente não te paga pelos minutos que levou… Ele te paga pelos ANOS que você investiu pra saber fazer.  Profissional que des">Se você ainda cobra barato porque “foi rápido”, você não entendeu o jogo. O cliente não te paga pelos minutos que levou…...</td>
+            <td><a href="https://www.instagram.com/p/DQzov2zDk3Q" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2023-06-10</td>
+            <td class="num">1,522</td>
+            <td class="num">31</td>
+            <td class="num engagement">1,553</td>
+            <td class="caption" title="Volante com nosso revestimento em Alcantara  #mclaren720s  #mclaren570s  #mclarenp1  #mclarenf1  #ferrari  #ferrari458  #lamborghini  #lamborghiniurus  #brasilcarspremium  #motorgrid  #supercarrosgram">Volante com nosso revestimento em Alcantara  #mclaren720s  #mclaren570s  #mclarenp1  #mclarenf1  #ferrari  #ferrari458  ...</td>
+            <td><a href="https://www.instagram.com/p/CtSg3q3s5Hp" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2025-07-09</td>
+            <td class="num">1,473</td>
+            <td class="num">19</td>
+            <td class="num engagement">1,492</td>
+            <td class="caption" title="Vai comprar um carro usado? Antes de fechar negócio, pare e pense: será que esse carro está realmente em boas condições?  Aqui na Motors Machine, realizamos uma inspeção pré-compra completa, seguindo ">Vai comprar um carro usado? Antes de fechar negócio, pare e pense: será que esse carro está realmente em boas condições?...</td>
+            <td><a href="https://www.instagram.com/p/DL4u1LWuAOk" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>19</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2023-08-29</td>
+            <td class="num">1,404</td>
+            <td class="num">32</td>
+            <td class="num engagement">1,436</td>
+            <td class="caption" title="Se liga no vídeo feito pelo @vtfilmes_ sobre a execução do meu serviço de customização dos cintos de segurança no Mustang GT do @taorachadel  Sem palavras, vídeo animal. Ficou a altura do carro, do ma">Se liga no vídeo feito pelo @vtfilmes_ sobre a execução do meu serviço de customização dos cintos de segurança no Mustan...</td>
+            <td><a href="https://www.instagram.com/p/Cwix30xsdrY" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>20</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2025-01-23</td>
+            <td class="num">1,343</td>
+            <td class="num">61</td>
+            <td class="num engagement">1,404</td>
+            <td class="caption" title="Volante FERRARI 296 que fizemos as faixas da bandeira italiana e revestimos com Alcantara preto e vermelho.">Volante FERRARI 296 que fizemos as faixas da bandeira italiana e revestimos com Alcantara preto e vermelho.</td>
+            <td><a href="https://www.instagram.com/p/DFJoQlrML5e" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>21</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-22</td>
+            <td class="num">1,343</td>
+            <td class="num">24</td>
+            <td class="num engagement">1,367</td>
+            <td class="caption" title="Lamborghini Revuelto ⚡️🔥 &amp; Porsche 911 TURBO S  #hipervisionenvelopamento  #ppf #envelopamento #911turbos #lamborghinirevuelto">Lamborghini Revuelto ⚡️🔥 &amp; Porsche 911 TURBO S  #hipervisionenvelopamento  #ppf #envelopamento #911turbos #lamborghi...</td>
+            <td><a href="https://www.instagram.com/p/DWMJABvDoMY" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>22</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-31</td>
+            <td class="num">1,194</td>
+            <td class="num">57</td>
+            <td class="num engagement">1,251</td>
+            <td class="caption" title="Icônica Ferrari F12 TDF chegou na Stradale pra receber PPF Full, aquele tipo de carro que marca para sempre em nossa história ✨  📲 Agende seu PPF com a Central de Concierge | (11) 91122-6423  #Ferrari">Icônica Ferrari F12 TDF chegou na Stradale pra receber PPF Full, aquele tipo de carro que marca para sempre em nossa his...</td>
+            <td><a href="https://www.instagram.com/p/DWkEdfxEe3a" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>23</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-15</td>
+            <td class="num">1,201</td>
+            <td class="num">25</td>
+            <td class="num engagement">1,226</td>
+            <td class="caption" title="O futuro da performance merece proteção absoluta. ⚡️  ​Finalizamos o PPF Full nesta Lamborghini Revuelto. Agora, os 1.015 cv de potência e o design aerodinâmico estão blindados contra pedregulhos, ris">O futuro da performance merece proteção absoluta. ⚡️  ​Finalizamos o PPF Full nesta Lamborghini Revuelto. Agora, os 1.01...</td>
+            <td><a href="https://www.instagram.com/p/DV6LagxDknu" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>24</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-26</td>
+            <td class="num">1,122</td>
+            <td class="num">25</td>
+            <td class="num engagement">1,147</td>
+            <td class="caption" title="O real motivo agora pode ser revelado.  A mudança aconteceu por uma questão de redes e diretrizes naturais de imagem. Faz parte do jogo.  Mas tem um detalhe que poucos perceberam…  O Neymar Jr. contin">O real motivo agora pode ser revelado.  A mudança aconteceu por uma questão de redes e diretrizes naturais de imagem. Fa...</td>
+            <td><a href="https://www.instagram.com/p/DWWftbZgTsB" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>25</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-03-22</td>
+            <td class="num">1,049</td>
+            <td class="num">17</td>
+            <td class="num engagement">1,066</td>
+            <td class="caption" title="Hoje foi um dia que Marcamos como o Ápice da nossa loja em valor de carro.  Bugatti Chiron e Ferrari SF 90 XX no nosso Showroom. #bugatti  #bugattichiron  #ferrarisf90xx  #sf90xx  @cbcustom_br  @novaj">Hoje foi um dia que Marcamos como o Ápice da nossa loja em valor de carro.  Bugatti Chiron e Ferrari SF 90 XX no nosso S...</td>
+            <td><a href="https://www.instagram.com/p/DWKROFGFBCQ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>26</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-15</td>
+            <td class="num">932</td>
+            <td class="num">4</td>
+            <td class="num engagement">936</td>
+            <td class="caption" title="💥 Kit Full Innotech para M2 G87, disponível a pronta entrega. Menor restrição de fluxo e a sonoridade Innotech @ipeofficial_ que transforma a experiência na direção.   🛩️ Envio para todo Brasil  Conci">💥 Kit Full Innotech para M2 G87, disponível a pronta entrega. Menor restrição de fluxo e a sonoridade Innotech @ipeoffic...</td>
+            <td><a href="https://www.instagram.com/p/DV6NLwQERxb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>27</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2023-09-11</td>
+            <td class="num">839</td>
+            <td class="num">46</td>
+            <td class="num engagement">885</td>
+            <td class="caption" title="Mais um vídeo top profissional do meu serviço de customização dos cintos de segurança nas lentes do @vtfilmes_   Customização dos cintos de segurança com atendimento especial na sua residência, agende">Mais um vídeo top profissional do meu serviço de customização dos cintos de segurança nas lentes do @vtfilmes_   Customi...</td>
+            <td><a href="https://www.instagram.com/p/CxEbFqjMBmG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>28</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-23</td>
+            <td class="num">816</td>
+            <td class="num">4</td>
+            <td class="num engagement">820</td>
+            <td class="caption" title="A reação e a alegria do MC Ryan SP diz tudo! 🚀 Personalizamos cada detalhe da sua Ferrari para deixá-la única no Brasil. Do teto estrelado ao interior impecável, o resultado ficou absurdo!   O Tubarão">A reação e a alegria do MC Ryan SP diz tudo! 🚀 Personalizamos cada detalhe da sua Ferrari para deixá-la única no Brasil....</td>
+            <td><a href="https://www.instagram.com/p/DWPd4VfEQ-P" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>29</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-02-13</td>
+            <td class="num">586</td>
+            <td class="num">59</td>
+            <td class="num engagement">645</td>
+            <td class="caption" title="Transformamos o volante da Ferrari que ja é lindo em uma Obra de arte!!!!  Confere com a gente como ficou o resultado desse trabaho no volante dessa belissima Ferrari 296 que fizemos. #ferrari">Transformamos o volante da Ferrari que ja é lindo em uma Obra de arte!!!!  Confere com a gente como ficou o resultado de...</td>
+            <td><a href="https://www.instagram.com/p/DUtbTR3kdmv" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>30</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-25</td>
+            <td class="num">583</td>
+            <td class="num">54</td>
+            <td class="num engagement">637</td>
+            <td class="caption" title="“Deu problema… 😳 @neymarjr . teve que tirar a imagem, mas não foi por estética…  Agora eu quero saber de você: qual o motivo você acha que levou a isso? 👇  Vou repostar quem chegar mais perto.” 🔥">“Deu problema… 😳 @neymarjr . teve que tirar a imagem, mas não foi por estética…  Agora eu quero saber de você: qual o mo...</td>
+            <td><a href="https://www.instagram.com/p/DWTybzCgc5c" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>31</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-03-19</td>
+            <td class="num">383</td>
+            <td class="num">54</td>
+            <td class="num engagement">437</td>
+            <td class="caption" title="Revestimos em Alcantara o Painel desse Maravilhoso 370Z Nismo.   Esse carro tem um problema cronico de trincar o painel mas,nos conseguimos resolver esse problema revestindo o painel e ficando no padr">Revestimos em Alcantara o Painel desse Maravilhoso 370Z Nismo.   Esse carro tem um problema cronico de trincar o painel ...</td>
+            <td><a href="https://www.instagram.com/p/DWEedzVAKhm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>32</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-24</td>
+            <td class="num">392</td>
+            <td class="num">20</td>
+            <td class="num engagement">412</td>
+            <td class="caption" title="Nossa ARTE a favor do Tensionamento do Material !!!   #viral #wrap #plusarteenvelopamentoautomotivo">Nossa ARTE a favor do Tensionamento do Material !!!   #viral #wrap #plusarteenvelopamentoautomotivo</td>
+            <td><a href="https://www.instagram.com/p/DWSHLmMDmy3" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>33</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-05-16</td>
+            <td class="num">367</td>
+            <td class="num">32</td>
+            <td class="num engagement">399</td>
+            <td class="caption" title="Lamborghini Huracán EVO Spyder  Personalizamos esse belo touro italiano com um toque de exclusividade: substituímos os cintos de segurança pretos por cintos na cor azul, harmonizando perfeitamente com">Lamborghini Huracán EVO Spyder  Personalizamos esse belo touro italiano com um toque de exclusividade: substituímos os c...</td>
+            <td><a href="https://www.instagram.com/p/DJsZOpqsqmD" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>34</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-18</td>
+            <td class="num">316</td>
+            <td class="num">53</td>
+            <td class="num engagement">369</td>
+            <td class="caption" title="Quando o Dono do carro não tem tempo de esperar !!!!  #trend #meme">Quando o Dono do carro não tem tempo de esperar !!!!  #trend #meme</td>
+            <td><a href="https://www.instagram.com/p/DWCmSl5DsAz" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>35</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2025-06-20</td>
+            <td class="num">343</td>
+            <td class="num">13</td>
+            <td class="num engagement">356</td>
+            <td class="caption" title="Customização nos bancos da Mclaren Artura #mclaren  #mclarenartura  #seats  #custom  #mclaren720s #mclarenp1">Customização nos bancos da Mclaren Artura #mclaren  #mclarenartura  #seats  #custom  #mclaren720s #mclarenp1</td>
+            <td><a href="https://www.instagram.com/p/DLIplsdSkzG" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>36</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-15</td>
+            <td class="num">281</td>
+            <td class="num">19</td>
+            <td class="num engagement">300</td>
+            <td class="caption" title="Corvette Z06 no Detalhe como gostamos de apresentar nossos projetos !   CUSTOMIZAÇÃO em Alto Padrão presente nesse perfeito Muscle Car 🇺🇸.   FULL PPF MATTE  Faixas Customizadas no Padrão Original  Pel">Corvette Z06 no Detalhe como gostamos de apresentar nossos projetos !   CUSTOMIZAÇÃO em Alto Padrão presente nesse perfe...</td>
+            <td><a href="https://www.instagram.com/p/DV6z4LskRU-" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>37</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-19</td>
+            <td class="num">283</td>
+            <td class="num">9</td>
+            <td class="num engagement">292</td>
+            <td class="caption" title="Você tem um Porsche 911 da geração 992? 🚨  O Catback Innotech @ipeofficial_ entrega o som que muda a experiência com o modelo.  A @stradalecarservice é Dealer Oficial Innotech no Brasil, entre em cont">Você tem um Porsche 911 da geração 992? 🚨  O Catback Innotech @ipeofficial_ entrega o som que muda a experiência com o m...</td>
+            <td><a href="https://www.instagram.com/p/DWDBdTmDEwe" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>38</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-29</td>
+            <td class="num">258</td>
+            <td class="num">0</td>
+            <td class="num engagement">258</td>
+            <td class="caption" title="Rolls-Royce Cullinan em revisão geral na Stradale. Cada detalhe revisado para manter o padrão que transformou esse SUV no símbolo máximo de luxo e refinamento. ✨  Concierge Stradale | (11) 91122-6423 ">Rolls-Royce Cullinan em revisão geral na Stradale. Cada detalhe revisado para manter o padrão que transformou esse SUV n...</td>
+            <td><a href="https://www.instagram.com/p/DWeWOCHkQBn" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>39</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-25</td>
+            <td class="num">230</td>
+            <td class="num">14</td>
+            <td class="num engagement">244</td>
+            <td class="caption" title="A Kairon Race acaba de lançar mais um produto que veio para marcar história.  Agora você pode transformar o seu próprio volante original em um modelo esportivo, forjado em fibra de carbono, com o acab">A Kairon Race acaba de lançar mais um produto que veio para marcar história.  Agora você pode transformar o seu próprio ...</td>
+            <td><a href="https://www.instagram.com/p/DWUnYyoAfZI" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>40</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2024-05-15</td>
+            <td class="num">230</td>
+            <td class="num">13</td>
+            <td class="num engagement">243</td>
+            <td class="caption" title="Que a  compra do seu esportivo é feita por 1/3  do valor, você já sabia.   Agora você pode pagar uma entrada de 50% e os 50% finais no cartão de crédito em 12 parcelas.  E consegue pontuar no seu cart">Que a  compra do seu esportivo é feita por 1/3  do valor, você já sabia.   Agora você pode pagar uma entrada de 50% e os...</td>
+            <td><a href="https://www.instagram.com/p/C7AFLhsum_r" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>41</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-08</td>
+            <td class="num">208</td>
+            <td class="num">33</td>
+            <td class="num engagement">241</td>
+            <td class="caption" title="O primeiro BYD Seal Roxo Metallic com rodas Vossen que você vai ver hoje. 🟣⚡️  ​O desafio aqui era elevar o nível de um carro que já é futurista. O resultado? Um brilho que hipnotiza e uma postura agr">O primeiro BYD Seal Roxo Metallic com rodas Vossen que você vai ver hoje. 🟣⚡️  ​O desafio aqui era elevar o nível de um ...</td>
+            <td><a href="https://www.instagram.com/p/DVo0SC8Du3V" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>42</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-31</td>
+            <td class="num">228</td>
+            <td class="num">8</td>
+            <td class="num engagement">236</td>
+            <td class="caption" title="A @porsche GT já é absurda de fábrica… mas na @kaironrace, a gente leva além.  Transformamos o que já é incrível em algo único, exclusivo e com a sua identidade.  Padrão @kaironrace  Nada igual. 🚀">A @porsche GT já é absurda de fábrica… mas na @kaironrace, a gente leva além.  Transformamos o que já é incrível em algo...</td>
+            <td><a href="https://www.instagram.com/p/DWhv0hlmWMA" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>43</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-25</td>
+            <td class="num">216</td>
+            <td class="num">9</td>
+            <td class="num engagement">225</td>
+            <td class="caption" title="Ela chegou!  A Ferrari 458 Italia 2012 é um dos superesportivos mais icônicos já produzidos pela renomada montadora italiana de Maranello. Equipado com um motor V8 de 4,5 litros aspirado naturalmente,">Ela chegou!  A Ferrari 458 Italia 2012 é um dos superesportivos mais icônicos já produzidos pela renomada montadora ital...</td>
+            <td><a href="https://www.instagram.com/p/DWUtBN5kxaF" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>44</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-17</td>
+            <td class="num">220</td>
+            <td class="num">1</td>
+            <td class="num engagement">221</td>
+            <td class="caption" title="Revisão geral feita do jeito certo: atenção aos detalhes, diagnóstico preciso e performance preservada. 🔧🏁  Tudo para manter seu carro no padrão que ele merece.  📞 Concierge Stradale: (11) 91122-6423 ">Revisão geral feita do jeito certo: atenção aos detalhes, diagnóstico preciso e performance preservada. 🔧🏁  Tudo para ma...</td>
+            <td><a href="https://www.instagram.com/p/DWATbwsj3m2" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>45</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-19</td>
+            <td class="num">165</td>
+            <td class="num">7</td>
+            <td class="num engagement">172</td>
+            <td class="caption" title="RS6 Cinematográfica!   Recebendo nosso PPF MATTE e Cuidados exclusivos #nopadraoplusarte .   #plusarteenvelopamentoautomotivo #ppf #superesportivos #rs6">RS6 Cinematográfica!   Recebendo nosso PPF MATTE e Cuidados exclusivos #nopadraoplusarte .   #plusarteenvelopamentoautom...</td>
+            <td><a href="https://www.instagram.com/p/DWFMYtSjnaj" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>46</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-03-24</td>
+            <td class="num">145</td>
+            <td class="num">8</td>
+            <td class="num engagement">153</td>
+            <td class="caption" title="Trocamos o Revestimento de mais 1 Porsche Cayenne que tem aquele problema cronico de soltar o couro do painel.   Usamos um material muito superior ao couro Animal. Usamos couro de Micro Fibra que tem ">Trocamos o Revestimento de mais 1 Porsche Cayenne que tem aquele problema cronico de soltar o couro do painel.   Usamos ...</td>
+            <td><a href="https://www.instagram.com/p/DWSJSAuoJ1G" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>47</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-03-27</td>
+            <td class="num">138</td>
+            <td class="num">11</td>
+            <td class="num engagement">149</td>
+            <td class="caption" title="Fizemos os detalhes a laser no centro dos bancos e bordado na cabeceira dessa Mclaren Artura do meu amigo @robsonr8">Fizemos os detalhes a laser no centro dos bancos e bordado na cabeceira dessa Mclaren Artura do meu amigo @robsonr8</td>
+            <td><a href="https://www.instagram.com/p/DWB30hzADVf" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>48</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-26</td>
+            <td class="num">133</td>
+            <td class="num">3</td>
+            <td class="num engagement">136</td>
+            <td class="caption" title="Técnica X Resultado X VIDA REAL   #viral #vidareal #plusarteenvelopamentoautomotivo">Técnica X Resultado X VIDA REAL   #viral #vidareal #plusarteenvelopamentoautomotivo</td>
+            <td><a href="https://www.instagram.com/p/DWXIS46DmuZ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>49</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-12</td>
+            <td class="num">120</td>
+            <td class="num">6</td>
+            <td class="num engagement">126</td>
+            <td class="caption" title="Detalhes de um Projeto que ficou incrível !!!!   #luxo #superesportivo #corvettez06 #nopadraoplusarte #plusarteenvelopamentoautomotivo">Detalhes de um Projeto que ficou incrível !!!!   #luxo #superesportivo #corvettez06 #nopadraoplusarte #plusarteenvelopam...</td>
+            <td><a href="https://www.instagram.com/p/DVzKVaQjqGo" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>50</td>
+            <td><a href="https://www.instagram.com/kaironrace/" target="_blank">@kaironrace</a></td>
+            <td>2026-03-25</td>
+            <td class="num">83</td>
+            <td class="num">11</td>
+            <td class="num engagement">94</td>
+            <td class="caption" title="Se você perdeu, agora é a hora de assistir 👀🔥  Já está no ar a matéria completa da @kaironrace que foi exibida no programa @direcaosobrerodas, na Band!  Um conteúdo simplesmente incrível, onde mostram">Se você perdeu, agora é a hora de assistir 👀🔥  Já está no ar a matéria completa da @kaironrace que foi exibida no progra...</td>
+            <td><a href="https://www.instagram.com/p/DWSgpUigYS6" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>51</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-02</td>
+            <td class="num">83</td>
+            <td class="num">8</td>
+            <td class="num engagement">91</td>
+            <td class="caption" title="​O clássico britânico com um toque de modernidade bruta. 🇬🇧🔥  ​Finalizamos este Mini Cooper com um envelopamento total em Titanium Grey. O acabamento acetinado ressalta cada linha icônica do design, t">​O clássico britânico com um toque de modernidade bruta. 🇬🇧🔥  ​Finalizamos este Mini Cooper com um envelopamento total e...</td>
+            <td><a href="https://www.instagram.com/p/DVZlmKbDrYV" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>52</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-03-27</td>
+            <td class="num">82</td>
+            <td class="num">8</td>
+            <td class="num engagement">90</td>
+            <td class="caption" title="Confere conosco um pouco do processo dessa linda Mclaren Artura sendo customizada. #mclaren">Confere conosco um pouco do processo dessa linda Mclaren Artura sendo customizada. #mclaren</td>
+            <td><a href="https://www.instagram.com/p/DWZGPl8gFK7" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>53</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-10</td>
+            <td class="num">71</td>
+            <td class="num">12</td>
+            <td class="num engagement">83</td>
+            <td class="caption" title="Rapaziada se liga nesse projeto da Discovery🔥  Fizemos envelopamento total de Grey Matte Metálic que ficou com estilo mais esportivo e agressivo ao mesmo tempo.  Para completar acrescentamos a cor Cha">Rapaziada se liga nesse projeto da Discovery🔥  Fizemos envelopamento total de Grey Matte Metálic que ficou com estilo ma...</td>
+            <td><a href="https://www.instagram.com/p/DVtTjJjDj4Z" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>54</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-04-01</td>
+            <td class="num">68</td>
+            <td class="num">13</td>
+            <td class="num engagement">81</td>
+            <td class="caption" title="Customizando carros desde SEMPRE 😂">Customizando carros desde SEMPRE 😂</td>
+            <td><a href="https://www.instagram.com/p/DWl8fvDjZIr" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>55</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-02-27</td>
+            <td class="num">75</td>
+            <td class="num">2</td>
+            <td class="num engagement">77</td>
+            <td class="caption" title="Rapaziada se liga como ficou o resultado do Dodge challenger nesse envelopamento Laranja alumínio.  Fizemos os acabamentos todos em fibra de carbono forjado.   Resultado ficou incrível, esportivo e ag">Rapaziada se liga como ficou o resultado do Dodge challenger nesse envelopamento Laranja alumínio.  Fizemos os acabament...</td>
+            <td><a href="https://www.instagram.com/p/DVRKuLHjomT" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>56</td>
+            <td><a href="https://www.instagram.com/stradalecarservice/" target="_blank">@stradalecarservice</a></td>
+            <td>2026-03-22</td>
+            <td class="num">73</td>
+            <td class="num">0</td>
+            <td class="num engagement">73</td>
+            <td class="caption" title="Stradale Experience | 23ª Edição   📍 Autódromo @velocitta – Mogi Guaçu 📅 Domingo, 17 de Maio  Inscrições abertas e limitadas, entre em contato com nosso concierge e garanta sua vaga. (11) 91122-6423  ">Stradale Experience | 23ª Edição   📍 Autódromo @velocitta – Mogi Guaçu 📅 Domingo, 17 de Maio  Inscrições abertas e limit...</td>
+            <td><a href="https://www.instagram.com/p/DWNHXmPEYH7" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>57</td>
+            <td><a href="https://www.instagram.com/plusarteenvelopamento/" target="_blank">@plusarteenvelopamento</a></td>
+            <td>2026-03-23</td>
+            <td class="num">69</td>
+            <td class="num">1</td>
+            <td class="num engagement">70</td>
+            <td class="caption" title="Escap Full Inox #nopadraoplusarte exclusivo para PORSCHE 911 992.2 .   #exclusive #porsche #911 #plusartetatuape">Escap Full Inox #nopadraoplusarte exclusivo para PORSCHE 911 992.2 .   #exclusive #porsche #911 #plusartetatuape</td>
+            <td><a href="https://www.instagram.com/p/DWPcLRqJhsE" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>58</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-29</td>
+            <td class="num">61</td>
+            <td class="num">8</td>
+            <td class="num engagement">69</td>
+            <td class="caption" title="🔥 Transformação de respeito!  Esse Haval H6 GT simplesmente mudou de nível… Recebeu um envelopamento completo no exclusivo Cinza Titanium da Hipervision, trazendo um visual único, sofisticado e agress">🔥 Transformação de respeito!  Esse Haval H6 GT simplesmente mudou de nível… Recebeu um envelopamento completo no exclusi...</td>
+            <td><a href="https://www.instagram.com/p/DWeYWSNjlz_" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>59</td>
+            <td><a href="https://www.instagram.com/cbcustom_br/" target="_blank">@cbcustom_br</a></td>
+            <td>2026-02-19</td>
+            <td class="num">66</td>
+            <td class="num">2</td>
+            <td class="num engagement">68</td>
+            <td class="caption" title="Restauração BMW 550i   Tingimos o interior dessa BMW que estava bem desgastado. Confiram o resultado de como ficou após nossa pintura especial.">Restauração BMW 550i   Tingimos o interior dessa BMW que estava bem desgastado. Confiram o resultado de como ficou após ...</td>
+            <td><a href="https://www.instagram.com/p/DU8r1ViEfTb" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>60</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-30</td>
+            <td class="num">60</td>
+            <td class="num">8</td>
+            <td class="num engagement">68</td>
+            <td class="caption" title="🔥 NÃO É SÓ UMA LAMBORGHINI… É UMA OBRA PROTEGIDA 🔥  A nova Lamborghini Revuelto chegou elevando o nível — um verdadeiro monstro híbrido que combina potência absurda com tecnologia de ponta.  E um carr">🔥 NÃO É SÓ UMA LAMBORGHINI… É UMA OBRA PROTEGIDA 🔥  A nova Lamborghini Revuelto chegou elevando o nível — um verdadeiro ...</td>
+            <td><a href="https://www.instagram.com/p/DWhd1kZOeXB" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>61</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-04</td>
+            <td class="num">56</td>
+            <td class="num">8</td>
+            <td class="num engagement">64</td>
+            <td class="caption" title="​A definição de brutalidade acaba de ser atualizada. 🐎🔥  ​Este Mustang não apenas domina as ruas, ele absorve todos os olhares. Recebeu um envelopamento total em PPF Fosco, unindo o visual agressivo d">​A definição de brutalidade acaba de ser atualizada. 🐎🔥  ​Este Mustang não apenas domina as ruas, ele absorve todos os o...</td>
+            <td><a href="https://www.instagram.com/p/DVeqYbDjsmL" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>62</td>
+            <td><a href="https://www.instagram.com/hipervisionenvelopamento/" target="_blank">@hipervisionenvelopamento</a></td>
+            <td>2026-03-01</td>
+            <td class="num">50</td>
+            <td class="num">2</td>
+            <td class="num engagement">52</td>
+            <td class="caption" title="Respeito não se pede, se impõe. 💀🖤  ​Essa BMW X6 deixou de ser apenas um carro de luxo para se tornar uma presença intimidadora nas ruas. Aplicamos o Preto Fosco Absoluto em toda a carroceria e aniqui">Respeito não se pede, se impõe. 💀🖤  ​Essa BMW X6 deixou de ser apenas um carro de luxo para se tornar uma presença intim...</td>
+            <td><a href="https://www.instagram.com/p/DVW-tJNDqvt" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>63</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-04-17</td>
+            <td class="num">47</td>
+            <td class="num">5</td>
+            <td class="num engagement">52</td>
+            <td class="caption" title="Agenda aberta para customização dos cintos de segurança em São Paulo e região.  #cintodesegurança #customização #carrosdeluxo #carrosesportivos #porsche #ferrari #mercedes #lamborghini #bmw #audi #sao">Agenda aberta para customização dos cintos de segurança em São Paulo e região.  #cintodesegurança #customização #carrosd...</td>
+            <td><a href="https://www.instagram.com/p/DIjbGdiMFNm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>64</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-02-19</td>
+            <td class="num">49</td>
+            <td class="num">3</td>
+            <td class="num engagement">52</td>
+            <td class="caption" title="Pensou em manutenção de VW e Audi, pensou Motors Machine! Entre em contato o agora mesmo com nosso consultor.  #vwbrasiil #audi #jettatsibrasil">Pensou em manutenção de VW e Audi, pensou Motors Machine! Entre em contato o agora mesmo com nosso consultor.  #vwbrasii...</td>
+            <td><a href="https://www.instagram.com/p/DU8iYheDm5n" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>65</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-07-17</td>
+            <td class="num">44</td>
+            <td class="num">1</td>
+            <td class="num engagement">45</td>
+            <td class="caption" title="O Porsche 718 Cayman GT4 RS é muito mais do que um esportivo — é um carro feito para quem leva a pilotagem a sério.   Por ser um dos modelos mais exclusivos da linha 718, cada detalhe importa   — e é ">O Porsche 718 Cayman GT4 RS é muito mais do que um esportivo — é um carro feito para quem leva a pilotagem a sério.   Po...</td>
+            <td><a href="https://www.instagram.com/p/DMOMAjVy6wP" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>66</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-06-16</td>
+            <td class="num">43</td>
+            <td class="num">0</td>
+            <td class="num engagement">43</td>
+            <td class="caption" title="Eeee se liga nessa barca que chegou em nossa loja para passar por pequenos ajustes, sim pequenos , pois uma nave dessas já é quase perfeita hahaha. Eu disse quase? Vou te explicar o que fizemos e deix">Eeee se liga nessa barca que chegou em nossa loja para passar por pequenos ajustes, sim pequenos , pois uma nave dessas ...</td>
+            <td><a href="https://www.instagram.com/p/DK7peDsgDPM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>67</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-02-28</td>
+            <td class="num">37</td>
+            <td class="num">0</td>
+            <td class="num engagement">37</td>
+            <td class="caption" title="Especialistas em Manutenção de veículos Importados Processo, Critério e Precisão nos definem 📍Curitiba/Atendimento apenas com Agendamento 📲 Fale Agora mesmo com nosso consultor  Jaguar F-Type 2.0 R-Dy">Especialistas em Manutenção de veículos Importados Processo, Critério e Precisão nos definem 📍Curitiba/Atendimento apena...</td>
+            <td><a href="https://www.instagram.com/p/DVTNS4DDgAO" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>68</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-02-20</td>
+            <td class="num">31</td>
+            <td class="num">6</td>
+            <td class="num engagement">37</td>
+            <td class="caption" title="Especialista em Manutenção de veículos Volkswagen, Audi, Porsche.  Processo, critério e precisão nos definem 📍Curitiba / Atendimento com Agendamento 📲Fale com nosso Consultor  #vwbrasil #audibrasil #a">Especialista em Manutenção de veículos Volkswagen, Audi, Porsche.  Processo, critério e precisão nos definem 📍Curitiba /...</td>
+            <td><a href="https://www.instagram.com/p/DU--TvbDhFC" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>69</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-03-31</td>
+            <td class="num">25</td>
+            <td class="num">11</td>
+            <td class="num engagement">36</td>
+            <td class="caption" title="Hidrorrepelência nível: pato profissional 🦆💧">Hidrorrepelência nível: pato profissional 🦆💧</td>
+            <td><a href="https://www.instagram.com/p/DWjz7NegDdz" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>70</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-03-31</td>
+            <td class="num">29</td>
+            <td class="num">7</td>
+            <td class="num engagement">36</td>
+            <td class="caption" title="*Carro zero… mas será que é zero mesmo? 👀*  Essa BMW 320i veio direto da concessionária e mesmo assim encontramos sujeira escondida em vários pontos na desmontagem.  E é aí que entra a diferença do se">*Carro zero… mas será que é zero mesmo? 👀*  Essa BMW 320i veio direto da concessionária e mesmo assim encontramos sujeir...</td>
+            <td><a href="https://www.instagram.com/p/DWja56sjc-S" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>71</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-01-18</td>
+            <td class="num">30</td>
+            <td class="num">5</td>
+            <td class="num engagement">35</td>
+            <td class="caption" title="Especialista em Manutenção de veículos Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com Agendamento 📲Fale com nosso Consultor  #porsche #porschecayman #porschecwb">Especialista em Manutenção de veículos Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com ...</td>
+            <td><a href="https://www.instagram.com/p/DTpsyOijluo" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>72</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-03-30</td>
+            <td class="num">33</td>
+            <td class="num">0</td>
+            <td class="num engagement">33</td>
+            <td class="caption" title="Eai!? Qual você escolheria?  Ferrari 458 Itália VS 488 GTB? 👀 Vota aqui pra gente saber 👇">Eai!? Qual você escolheria?  Ferrari 458 Itália VS 488 GTB? 👀 Vota aqui pra gente saber 👇</td>
+            <td><a href="https://www.instagram.com/p/DWhduzilXlA" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>73</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-03-31</td>
+            <td class="num">31</td>
+            <td class="num">0</td>
+            <td class="num engagement">31</td>
+            <td class="caption" title="𝐌𝐞𝐫𝐜𝐞𝐝𝐞𝐬 𝐛𝐞𝐧𝐳 𝐄𝟔𝟑 𝟏𝟎𝟎% 𝐏 𝐑 𝐎 𝐓 𝐄 𝐆 𝐈 𝐃 𝐀ⵑ  Confere só o resultado dessa máquina que recebeu PPF Full Gloss. Fiquem ligados que em breve tem mais conteúdo por aí 🔥">𝐌𝐞𝐫𝐜𝐞𝐝𝐞𝐬 𝐛𝐞𝐧𝐳 𝐄𝟔𝟑 𝟏𝟎𝟎% 𝐏 𝐑 𝐎 𝐓 𝐄 𝐆 𝐈 𝐃 𝐀ⵑ  Confere só o resultado dessa máquina que recebeu PPF Full Gloss. Fiquem ligad...</td>
+            <td><a href="https://www.instagram.com/p/DWjIofAjfcJ" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>74</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-06-14</td>
+            <td class="num">26</td>
+            <td class="num">5</td>
+            <td class="num engagement">31</td>
+            <td class="caption" title="MC LAREN ARTURA   🚗✨ Transformação sob medida: Customização de Cintos de Segurança | McLaren Artura  Cada detalhe faz a diferença quando falamos de um superesportivo exclusivo como essa McLaren Artura">MC LAREN ARTURA   🚗✨ Transformação sob medida: Customização de Cintos de Segurança | McLaren Artura  Cada detalhe faz a ...</td>
+            <td><a href="https://www.instagram.com/p/DK4ozxDMqKI" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>75</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-02-14</td>
+            <td class="num">29</td>
+            <td class="num">2</td>
+            <td class="num engagement">31</td>
+            <td class="caption" title="Especialista em Manutenção de veículos #Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com Agendamento 📲Fale com nosso Consultor Técnico   #gla250 #amg #mercedesbenzamg">Especialista em Manutenção de veículos #Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com...</td>
+            <td><a href="https://www.instagram.com/p/DUvMtC4Dr9E" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>76</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-03-01</td>
+            <td class="num">26</td>
+            <td class="num">0</td>
+            <td class="num engagement">26</td>
+            <td class="caption" title="Especialistas em Manutenção de veículos Importados Processo, Critério e Precisão nos definem 📍Curitiba/Atendimento apenas com Agendamento 📲 Fale Agora mesmo com nosso consultor  #volvoxc60 #volvoxc90 ">Especialistas em Manutenção de veículos Importados Processo, Critério e Precisão nos definem 📍Curitiba/Atendimento apena...</td>
+            <td><a href="https://www.instagram.com/p/DVWDwfpjmvv" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>77</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-03-31</td>
+            <td class="num">17</td>
+            <td class="num">5</td>
+            <td class="num engagement">22</td>
+            <td class="caption" title="Potência, luxo e agora proteção total 🛡️  Mercedes E63 AMG 2012 protegida e pronta pra rodar impecável todos os dias.">Potência, luxo e agora proteção total 🛡️  Mercedes E63 AMG 2012 protegida e pronta pra rodar impecável todos os dias.</td>
+            <td><a href="https://www.instagram.com/p/DWkEcNmgHZw" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>78</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-03-15</td>
+            <td class="num">22</td>
+            <td class="num">0</td>
+            <td class="num engagement">22</td>
+            <td class="caption" title="Especialista em Manutenção de Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com Agendamento 📲Fale com nosso Consultor  #cla200  #c180 #carrosimportados">Especialista em Manutenção de Importados Processo, critério e precisão nos definem 📍Curitiba / Atendimento com Agendamen...</td>
+            <td><a href="https://www.instagram.com/p/DV6XttsDj7f" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>79</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-28</td>
+            <td class="num">20</td>
+            <td class="num">0</td>
+            <td class="num engagement">20</td>
+            <td class="caption" title="Na farmácia mais perto de você….ops, não: só aqui na Auto Fraction!😁  CONHEÇA NOSSO LOUNGE  📌 São Paulo SP | VISITAS às QUARTAS  #CotasDeCarro #CompartilhamentoDeCarro #CarrosEsportivos">Na farmácia mais perto de você….ops, não: só aqui na Auto Fraction!😁  CONHEÇA NOSSO LOUNGE  📌 São Paulo SP | VISITAS às ...</td>
+            <td><a href="https://www.instagram.com/p/DWckbsvkSbV" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>80</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2025-10-07</td>
+            <td class="num">3</td>
+            <td class="num">14</td>
+            <td class="num engagement">17</td>
+            <td class="caption" title="O maior vendedor do Brasil escolheu trazer seu novo esportivo para ser cuidado aqui na L.A Custom.  Essa Ferrari Roma recebeu o que há de melhor em proteção automotiva: o PPF, garantindo que a pintura">O maior vendedor do Brasil escolheu trazer seu novo esportivo para ser cuidado aqui na L.A Custom.  Essa Ferrari Roma re...</td>
+            <td><a href="https://www.instagram.com/p/DPheKa6jRYp" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>81</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-29</td>
+            <td class="num">16</td>
+            <td class="num">0</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Há carros que transportam. E há carros que transformam. Para quem sabe a diferença, reunimos as cotas mais desejadas do universo automotivo em um só lugar.  Cotas pra uso imediato:  - Ford Mustang GT ">Há carros que transportam. E há carros que transformam. Para quem sabe a diferença, reunimos as cotas mais desejadas do ...</td>
+            <td><a href="https://www.instagram.com/p/DWe827ijp2a" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>82</td>
+            <td><a href="https://www.instagram.com/l.acustom/" target="_blank">@l.acustom</a></td>
+            <td>2026-04-01</td>
+            <td class="num">16</td>
+            <td class="num">0</td>
+            <td class="num engagement">16</td>
+            <td class="caption" title="Hoje é quarta-feira com sabor de quinta-feira 😂  Por aqui agenda cheia, muito trabalho rolando e o foco no PPF tá ON 🚀💪 Dia de fazer acontecer, vambora! 🔥">Hoje é quarta-feira com sabor de quinta-feira 😂  Por aqui agenda cheia, muito trabalho rolando e o foco no PPF tá ON 🚀💪 ...</td>
+            <td><a href="https://www.instagram.com/p/DWluFq9jf-z" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>83</td>
+            <td><a href="https://www.instagram.com/motors_machine/" target="_blank">@motors_machine</a></td>
+            <td>2026-02-16</td>
+            <td class="num">15</td>
+            <td class="num">0</td>
+            <td class="num engagement">15</td>
+            <td class="caption" title="#donodenegocio #donodeoficina #empreendedorismo">#donodenegocio #donodeoficina #empreendedorismo</td>
+            <td><a href="https://www.instagram.com/p/DU01MxlDowc" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>84</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-26</td>
+            <td class="num">11</td>
+            <td class="num">0</td>
+            <td class="num engagement">11</td>
+            <td class="caption" title="Depois de fechar com a Auto Fraction, esse foi o único problema que ela teve… 😂 Três carros esportivos. Uma necessaire pequena demais. 🚗🚗🚗  Aqui a gente resolve tudo:  ✅ Manutenção  ✅ Revisões  ✅ IPVA">Depois de fechar com a Auto Fraction, esse foi o único problema que ela teve… 😂 Três carros esportivos. Uma necessaire p...</td>
+            <td><a href="https://www.instagram.com/p/DWXSuPZiFnm" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>85</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-27</td>
+            <td class="num">9</td>
+            <td class="num">0</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="Sabe aquele olhar que a gente dá pro carro dos sonhos? 😍 Aquele de &quot;um dia vai ser meu&quot;…  E se esse dia fosse hoje — sem pagar 100% por ele?  Na Auto Fraction, você realiza esse sonho pagando só o que">Sabe aquele olhar que a gente dá pro carro dos sonhos? 😍 Aquele de &quot;um dia vai ser meu&quot;…  E se esse dia fosse ...</td>
+            <td><a href="https://www.instagram.com/p/DWZw8HWEcQe" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>86</td>
+            <td><a href="https://www.instagram.com/machadojackson/" target="_blank">@machadojackson</a></td>
+            <td>2025-09-16</td>
+            <td class="num">9</td>
+            <td class="num">0</td>
+            <td class="num engagement">9</td>
+            <td class="caption" title="CORVETTE C8  O melhor esportivo de luxo para importar hoje na faixa de 1 milhão. 🇺🇸🏎️  O Corvette C8 entrega tudo o que um gearhead procura: motor V8 central de 495 cv, visual agressivo e presença abs">CORVETTE C8  O melhor esportivo de luxo para importar hoje na faixa de 1 milhão. 🇺🇸🏎️  O Corvette C8 entrega tudo o que ...</td>
+            <td><a href="https://www.instagram.com/p/DOrVEtjDtgV" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>87</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-24</td>
+            <td class="num">7</td>
+            <td class="num">0</td>
+            <td class="num engagement">7</td>
+            <td class="caption" title="Você lembra da primeira vez que sentiu o ronco de um motor esportivo vibrar no peito? 🏎️💨  Mais do que cavalos de potência ou design, um carro desses é um marco. É a prova física de cada noite em clar">Você lembra da primeira vez que sentiu o ronco de um motor esportivo vibrar no peito? 🏎️💨  Mais do que cavalos de potênc...</td>
+            <td><a href="https://www.instagram.com/p/DWSC0VYD9At" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>88</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-23</td>
+            <td class="num">7</td>
+            <td class="num">0</td>
+            <td class="num engagement">7</td>
+            <td class="caption" title="Não é sobre o que o carro faz, é sobre como você se sente ao assumir o volante. Entregamos o acesso ao topo do mundo automotivo.  Sua lista de desejos acaba de ser atualizada com as melhores oportunid">Não é sobre o que o carro faz, é sobre como você se sente ao assumir o volante. Entregamos o acesso ao topo do mundo aut...</td>
+            <td><a href="https://www.instagram.com/p/DWPl4yEEZMM" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>89</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-31</td>
+            <td class="num">5</td>
+            <td class="num">0</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="Muitas vezes, o desejo de ter um carro de alta performance esbarra na racionalidade financeira. O custo de oportunidade do capital imobilizado e as despesas fixas (IPVA, seguro, manutenção especializa">Muitas vezes, o desejo de ter um carro de alta performance esbarra na racionalidade financeira. O custo de oportunidade ...</td>
+            <td><a href="https://www.instagram.com/p/DWkCvtxESl0" target="_blank">Ver Post</a></td>
+        </tr>
+        <tr>
+            <td>90</td>
+            <td><a href="https://www.instagram.com/autofraction/" target="_blank">@autofraction</a></td>
+            <td>2026-03-31</td>
+            <td class="num">5</td>
+            <td class="num">0</td>
+            <td class="num engagement">5</td>
+            <td class="caption" title="O dilema clássico do investidor: realizar o desejo pessoal ou manter a liquidez nos investimentos? 📉🏎️  A resposta inteligente é: faça os dois. Sabemos que um esportivo fica, em média, 70% do tempo pa">O dilema clássico do investidor: realizar o desejo pessoal ou manter a liquidez nos investimentos? 📉🏎️  A resposta intel...</td>
+            <td><a href="https://www.instagram.com/p/DWh4dDyEYxo" target="_blank">Ver Post</a></td>
+        </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Instagram Spy Report &bull; 90 posts de 9 perfis &bull; 01/04/2026 14:59
+</div>
+
+<script>
+let sortDir = {};
+
+function sortTable(colIdx, type) {
+    const table = document.getElementById('postsTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortDir[colIdx] = !sortDir[colIdx];
+    const dir = sortDir[colIdx] ? 1 : -1;
+
+    rows.sort((a, b) => {
+        let aVal = a.cells[colIdx].textContent.trim();
+        let bVal = b.cells[colIdx].textContent.trim();
+        if (type === 'num') {
+            aVal = parseInt(aVal.replace(/,/g, '')) || 0;
+            bVal = parseInt(bVal.replace(/,/g, '')) || 0;
+            return (aVal - bVal) * dir;
+        }
+        return aVal.localeCompare(bVal) * dir;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+
+    document.querySelectorAll('thead th .sort-arrow').forEach(s => s.textContent = '');
+    const arrow = table.querySelectorAll('thead th')[colIdx].querySelector('.sort-arrow');
+    arrow.textContent = sortDir[colIdx] ? ' \u25B2' : ' \u25BC';
+}
+
+function filterTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const profile = document.getElementById('profileFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#postsTable tbody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const profileCell = row.cells[1].textContent.toLowerCase();
+        const matchSearch = !search || text.includes(search);
+        const matchProfile = !profile || profileCell.includes(profile);
+        row.style.display = (matchSearch && matchProfile) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>
